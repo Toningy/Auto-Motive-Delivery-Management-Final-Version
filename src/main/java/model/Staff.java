@@ -1,27 +1,16 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "staff")
 public class Staff {
-    @Id
-    @Column(name = "staff_id")
     private Integer staffId;
     
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "staff_id")
     private Person person;
     
-    @Column(name = "salary", precision = 10, scale = 2)
     private BigDecimal salary;
     
-    @Column(name = "working_email", length = 50)
     private String workingEmail;
     
-    @Column(name = "taxation_number", length = 20)
     private String taxationNumber;
     
     public Staff() {}

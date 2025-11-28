@@ -1,10 +1,8 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Embeddable
 public class OrderBasketId implements Serializable {
     private Integer orderId;
     private Integer carId;

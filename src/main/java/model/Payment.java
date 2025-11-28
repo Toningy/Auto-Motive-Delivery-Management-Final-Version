@@ -1,26 +1,15 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Entity
-@Table(name = "payment")
 public class Payment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
     private Integer paymentId;
     
-    @Column(name = "payment_date")
-    @Temporal(TemporalType.DATE)
     private Date paymentDate;
     
-    @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
     
-    @ManyToOne
-    @JoinColumn(name = "invoice_id")
     private Invoice invoice;
     
     public Payment() {}

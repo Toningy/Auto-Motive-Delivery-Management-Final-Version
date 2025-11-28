@@ -1,16 +1,9 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "delivery_vehicle")
 public class DeliveryVehicle {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "vehicle_id")
     private Integer vehicleId;
     
-    @Column(name = "plate_number", length = 50)
     private String plateNumber;
     
     public DeliveryVehicle() {}

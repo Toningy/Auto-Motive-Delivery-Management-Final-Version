@@ -1,21 +1,11 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "order_basket")
 public class OrderBasket {
-    @EmbeddedId
     private OrderBasketId id;
     
-    @ManyToOne
-    @MapsId("orderId")
-    @JoinColumn(name = "order_id")
     private Order order;
     
-    @ManyToOne
-    @MapsId("carId")
-    @JoinColumn(name = "car_id")
     private Car car;
     
     public OrderBasket() {}

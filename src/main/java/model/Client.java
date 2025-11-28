@@ -1,30 +1,18 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.util.List;
 
-@Entity
-@Table(name = "client")
 public class Client {
-    @Id
-    @Column(name = "client_id")
     private Integer clientId;
     
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "client_id")
     private Person person;
     
-    @Column(name = "shipping_address", length = 250)
     private String shippingAddress;
     
-    @Column(name = "billing_address", length = 50)
     private String billingAddress;
     
-    @OneToMany(mappedBy = "client")
     private List<Order> orders;
     
-    @OneToMany(mappedBy = "client")
     private List<Invoice> invoices;
     
     public Client() {}

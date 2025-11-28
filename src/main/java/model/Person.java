@@ -1,27 +1,16 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.util.Date;
 
-@Entity
-@Table(name = "person")
 public class Person {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "person_id")
     private Integer personId;
     
-    @Column(name = "name", length = 50, nullable = false)
     private String name;
     
-    @Column(name = "phone_number", length = 25)
     private String phoneNumber;
     
-    @Column(name = "birthdate")
-    @Temporal(TemporalType.DATE)
     private Date birthdate;
     
-    @Column(name = "email", length = 50)
     private String email;
     
     public Person() {}

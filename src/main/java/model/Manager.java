@@ -1,25 +1,13 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "manager")
 public class Manager {
-    @Id
-    @Column(name = "staff_id")
     private Integer staffId;
     
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "staff_id")
     private Staff staff;
     
-    @ManyToOne
-    @JoinColumn(name = "factory_id")
     private Factory factory;
     
-    @ManyToOne
-    @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
     
     public Manager() {}

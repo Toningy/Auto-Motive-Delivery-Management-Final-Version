@@ -1,26 +1,14 @@
-package hk.edu.polyu.automotive_delivery.entity;
+package model;
 
-import jakarta.persistence.*;
 import java.util.Date;
 
-@Entity
-@Table(name = "`order`")
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id")
     private Integer orderId;
     
-    @ManyToOne
-    @JoinColumn(name = "client_id")
     private Client client;
     
-    @Column(name = "order_date")
-    @Temporal(TemporalType.DATE)
     private Date orderDate;
     
-    @OneToOne
-    @JoinColumn(name = "mission_id")
     private DeliveryMission deliveryMission;
     
     public Order() {}
