@@ -2,8 +2,6 @@ package repository;
 
 import db.DBUtil;
 import model.DeliveryMission;
-import model.DeliveryMan;
-import model.Manager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,22 +13,19 @@ public class DeliveryMissionRepository {
     private DeliveryMission mapRowToDeliveryMission(ResultSet rs) throws SQLException {
         DeliveryMission dm = new DeliveryMission();
         dm.setMissionId(rs.getInt("mission_id"));
-        Date missionDate = rs.getDate("mission_date");
-        dm.setMissionDate(missionDate);
+        dm.setOrderId((Integer) rs.getObject("order_id"));
+        dm.setDeliveryManId((Integer) rs.getObject("delivery_man_id"));
+        dm.setVehicleId((Integer) rs.getObject("vehicle_id"));
         dm.setStatus(rs.getString("status"));
 
-        Integer deliveryManId = (Integer) rs.getObject("delivery_man_id");
-        if (deliveryManId != null) {
-            DeliveryMan d = new DeliveryMan();
-            d.setStaffId(deliveryManId);
-            dm.setDeliveryMan(d);
+        // Annahme: Deine DB hat start_date und end_date
+        Date startDate = rs.getDate("start_date");
+        if (startDate != null) {
+            dm.setStartDate(startDate);
         }
-
-        Integer managerId = (Integer) rs.getObject("manager_id");
-        if (managerId != null) {
-            Manager m = new Manager();
-            m.setStaffId(managerId);
-            dm.setManager(m);
+        Date endDate = rs.getDate("end_date");
+        if (endDate != null) {
+            dm.setEndDate(endDate);
         }
 
         return dm;
@@ -38,8 +33,8 @@ public class DeliveryMissionRepository {
 
     public List<DeliveryMission> findByDeliveryManId(Integer deliveryManId) {
         List<DeliveryMission> result = new ArrayList<>();
-        String sql = "SELECT mission_id, mission_date, status, delivery_man_id, manager_id " +
-                     "FROM delivery_mission WHERE delivery_man_id = ?";
+        String sql = "SELECT mission_id, order_id, delivery_man_id, vehicle_id, status, start_date, end_date " +
+                "FROM delivery_mission WHERE delivery_man_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,8 +53,8 @@ public class DeliveryMissionRepository {
 
     public List<DeliveryMission> findByStatus(String status) {
         List<DeliveryMission> result = new ArrayList<>();
-        String sql = "SELECT mission_id, mission_date, status, delivery_man_id, manager_id " +
-                     "FROM delivery_mission WHERE status = ?";
+        String sql = "SELECT mission_id, order_id, delivery_man_id, vehicle_id, status, start_date, end_date " +
+                "FROM delivery_mission WHERE status = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -78,8 +73,8 @@ public class DeliveryMissionRepository {
 
     public List<DeliveryMission> findMissionsBetweenDates(Date startDate, Date endDate) {
         List<DeliveryMission> result = new ArrayList<>();
-        String sql = "SELECT mission_id, mission_date, status, delivery_man_id, manager_id " +
-                     "FROM delivery_mission WHERE mission_date BETWEEN ? AND ?";
+        String sql = "SELECT mission_id, order_id, delivery_man_id, vehicle_id, status, start_date, end_date " +
+                "FROM delivery_mission WHERE start_date BETWEEN ? AND ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -99,8 +94,8 @@ public class DeliveryMissionRepository {
 
     public List<DeliveryMission> findPendingMissionsByDeliveryMan(Integer deliveryManId) {
         List<DeliveryMission> result = new ArrayList<>();
-        String sql = "SELECT mission_id, mission_date, status, delivery_man_id, manager_id " +
-                     "FROM delivery_mission WHERE delivery_man_id = ? AND status = 'pending'";
+        String sql = "SELECT mission_id, order_id, delivery_man_id, vehicle_id, status, start_date, end_date " +
+                "FROM delivery_mission WHERE delivery_man_id = ? AND status = 'pending'";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

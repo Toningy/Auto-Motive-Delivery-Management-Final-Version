@@ -1,0 +1,59 @@
+Quick Startup Guide (MySQL + Schema/TestData + Tomcat + App)
+1. Prepare MySQL and load schema + test data
+Open a terminal.
+Log in to MySQL:
+mysql -u root -p
+(Enter your MySQL root password.)
+Create and/or select your database (only needed once):
+CREATE DATABASE automotive_db;
+USE automotive_db;
+In a normal terminal (not inside the MySQL shell), run your schema file:
+mysql -u root -p automotive_db < schema.sql
+Then run your test data file:
+mysql -u root -p automotive_db < testdata.sql
+(Optional) Check if tables and data are there (inside MySQL):
+USE automotive_db;
+SHOW TABLES;
+SELECT * FROM car LIMIT 5;
+2. Build the Java web application with Maven
+Go to the project root folder (where pom.xml is located):
+cd /path/to/your/project
+Build the project:
+mvn clean package
+After a successful build, Maven will create a WAR file in:
+target/your-artifact-name.war
+(The actual name depends on the artifactId in your pom.xml.)
+3. Configure and run Tomcat in IntelliJ
+In IntelliJ, open:
+Run → Edit Configurations...
+Click the “+” button, choose:
+Tomcat Server → Local
+In the Deployment tab:
+Click “+” → Artifact
+Select your WAR artifact (the one Maven created).
+Set the Application context to:
+/
+(So the app is available directly at http://localhost:8080/.)
+Apply and close the dialog.
+If you ever get a permission error on catalina.sh, run:
+chmod +x /path/to/tomcat/bin/catalina.sh
+4. Start Tomcat and open the application
+In IntelliJ, click the green Run button for the Tomcat configuration.
+Wait until the console shows that Tomcat started successfully (no errors).
+Open a browser and go to:
+http://localhost:8080/
+(Or http://localhost:8080/your-context if you used another context path.)
+You should now see your new index.html Toyota HK frontend.
+
+5. If the page still shows the “old” version
+Check that your HTML file is here:
+src/main/webapp/index.html
+Make sure the file content is the new version you want.
+Rebuild and redeploy:
+mvn clean package
+In IntelliJ:
+Stop Tomcat.
+Start Tomcat again.
+In the browser, do a hard reload:
+Mac: Cmd + Shift + R
+Windows/Linux: Ctrl + F5
