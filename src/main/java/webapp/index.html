@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toyota Hong Kong | Premium Vehicle Dealership</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        /* Enhanced Navigation */
+        nav {
+            background: #ffffff;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #eb0a1e;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #4a4a4a;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #eb0a1e;
+        }
+
+        .nav-links a.active {
+            color: #eb0a1e;
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #eb0a1e;
+        }
+
+        .cart-button {
+            position: relative;
+            background: #eb0a1e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .cart-button:hover {
+            background: #c00818;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(235, 10, 30, 0.3);
+        }
+
+        .cart-badge {
+            background: white;
+            color: #eb0a1e;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Enhanced Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #eb0a1e 0%, #c00818 100%);
+            color: white;
+            padding: 80px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Controls */
+        .controls {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #eb0a1e;
+        }
+
+        .search-btn {
+            background: #eb0a1e;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #c00818;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #eb0a1e;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #eb0a1e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c00818;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #4a4a4a;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Results Info */
+        .results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .results-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+
+        .sort-select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Loading & Error States */
+        .loading, .error, .no-results {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .loading {
+            font-size: 18px;
+            color: #888;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #eb0a1e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #eb0a1e;
+            font-size: 18px;
+        }
+
+        .no-results {
+            font-size: 18px;
+            color: #888;
+        }
+
+        /* Enhanced Vehicle Grid */
+        .vehicles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .vehicle-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+        }
+
+        .vehicle-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #eb0a1e;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .vehicle-info {
+            padding: 24px;
+        }
+
+        .vehicle-model {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .vehicle-year {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .vehicle-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .spec-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .spec-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .vehicle-price {
+            font-size: 32px;
+            font-weight: 700;
+            color: #eb0a1e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .vehicle-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .add-to-cart {
+            flex: 1;
+            background: #eb0a1e;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-to-cart:hover {
+            background: #c00818;
+            transform: translateY(-2px);
+        }
+
+        .wishlist-btn {
+            width: 50px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .wishlist-btn:hover {
+            background: #ff4757;
+            color: white;
+        }
+
+        /* Cart Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 28px;
+            color: #1a1a1a;
+        }
+
+        .close-btn {
+            background: #f0f0f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .cart-item-details {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .cart-item-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #eb0a1e;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .qty-btn:hover {
+            border-color: #eb0a1e;
+            color: #eb0a1e;
+        }
+
+        .qty-display {
+            font-weight: 700;
+            font-size: 16px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #eb0a1e;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: underline;
+            margin-left: auto;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-cart-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .modal-footer {
+            padding: 30px;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .cart-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-label {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            margin-bottom: 24px;
+        }
+
+        .total-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .total-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #eb0a1e;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #eb0a1e;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .checkout-btn:hover {
+            background: #c00818;
+            transform: translateY(-2px);
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 10px;
+            background: #2ecc71;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .vehicles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav>
+    <div class="nav-container">
+        <a href="#" class="logo">
+            <span class="logo-icon">🚗</span>
+            <span>TOYOTA HK</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#" class="active">Vehicles</a>
+            <a href="#" onclick="showAbout()">About</a>
+            <a href="#" onclick="showContact()">Contact</a>
+        </div>
+
+        <button class="cart-button" onclick="openCart()">
+            <span>Cart</span>
+            <span class="cart-badge" id="cart-count">0</span>
+        </button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="hero">
+    <div class="hero-content">
+        <h1>Premium Toyota Vehicles</h1>
+        <p>Discover our extensive collection of quality Toyota vehicles in Hong Kong</p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalVehicles">0</div>
+                <div class="stat-label">Vehicles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">1K+</div>
+                <div class="stat-label">Happy Clients</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Deliveries</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Controls -->
+    <div class="controls">
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by model name (e.g., Corolla, Camry, RAV4...)">
+            <button class="search-btn" onclick="applyFilters()">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Warehouse</label>
+                <select id="warehouseFilter">
+                    <option value="">All Warehouses</option>
+                    <option value="1">Warehouse 1</option>
+                    <option value="2">Warehouse 2</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Max Price (HKD)</label>
+                <input type="number" id="priceFilter" placeholder="e.g., 300000" step="10000">
+            </div>
+
+            <div class="filter-group">
+                <label>Year</label>
+                <select id="yearFilter">
+                    <option value="">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Factory</label>
+                <select id="factoryFilter">
+                    <option value="">All Factories</option>
+                    <option value="1">Factory 1</option>
+                    <option value="2">Factory 2</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn btn-primary" onclick="applyFilters()">
+                <i class="fas fa-filter"></i> Apply Filters
+            </button>
+            <button class="btn btn-secondary" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+        <div class="results-count" id="resultsCount">Loading vehicles...</div>
+        <select class="sort-select" id="sortSelect" onchange="sortVehicles()">
+            <option value="default">Sort by: Default</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="year-desc">Year: Newest First</option>
+            <option value="year-asc">Year: Oldest First</option>
+            <option value="name-asc">Name: A to Z</option>
+        </select>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        Loading vehicles...
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="error" style="display: none;"></div>
+
+    <!-- No Results -->
+    <div id="noResults" class="no-results" style="display: none;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+        No vehicles found matching your criteria
+    </div>
+
+    <!-- Vehicles Grid -->
+    <div id="vehiclesGrid" class="vehicles-grid"></div>
+</div>
+
+<!-- Cart Modal -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Shopping Cart</h2>
+            <button class="close-btn" onclick="closeCart()">&times;</button>
+        </div>
+        <div class="modal-body" id="cartItems"></div>
+        <div class="modal-footer">
+            <div class="cart-summary">
+                <span class="summary-label">Items:</span>
+                <span class="summary-value" id="itemCount">0</span>
+            </div>
+            <div class="cart-total">
+                <span class="total-label">Total:</span>
+                <span class="total-value" id="cartTotal">HKD 0</span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()" id="checkoutBtn">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ✅ ANGEPASST: API-URL auf dein Servlet
+    const API_URL = 'api/cars';  // Relativ zum Context-Path
+    let allVehicles = [];
+    let filteredVehicles = [];
+    let cart = [];
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', function() {
+        loadVehicles();
+    });
+
+    // ✅ ANGEPASST: Fetch von deinem Servlet
+    async function loadVehicles() {
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const grid = document.getElementById('vehiclesGrid');
+        const resultsCount = document.getElementById('resultsCount');
+
+        loading.style.display = 'block';
+        error.style.display = 'none';
+        grid.innerHTML = '';
+
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) {
+                throw new Error(`Backend not reachable (HTTP ${response.status})`);
+            }
+            allVehicles = await response.json();
+            filteredVehicles = [...allVehicles];
+            loading.style.display = 'none';
+
+            if (allVehicles.length === 0) {
+                document.getElementById('noResults').style.display = 'block';
+                resultsCount.textContent = '0 vehicles found';
+                return;
+            }
+
+            // Update hero stats
+            document.getElementById('totalVehicles').textContent = allVehicles.length;
+
+            displayVehicles(filteredVehicles);
+            updateResultsCount();
+        } catch (err) {
+            console.error(err);
+            loading.style.display = 'none';
+            error.textContent = `Error loading vehicles: ${err.message}`;
+            error.style.display = 'block';
+        }
+    }
+
+    // ✅ ANGEPASST: Datenstruktur (warehouseId statt warehouse.warehouseId)
+    function displayVehicles(vehicles) {
+        const grid = document.getElementById('vehiclesGrid');
+        const noResults = document.getElementById('noResults');
+        grid.innerHTML = '';
+
+        if (vehicles.length === 0) {
+            noResults.style.display = 'block';
+            return;
+        }
+
+        noResults.style.display = 'none';
+
+        vehicles.forEach(vehicle => {
+            const card = document.createElement('div');
+            card.className = 'vehicle-card';
+
+            const isNew = vehicle.modelYear >= 2023;
+
+            card.innerHTML = `
+                <div class="vehicle-image" style="position: relative;">
+                    🚗
+                    ${isNew ? '<div class="vehicle-badge">New</div>' : ''}
+                </div>
+                <div class="vehicle-info">
+                    <div class="vehicle-model">${vehicle.modelName}</div>
+                    <div class="vehicle-year">Model Year ${vehicle.modelYear}</div>
+
+                    <div class="vehicle-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Weight</span>
+                            <span class="spec-value">${vehicle.weight} kg</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Warehouse</span>
+                            <span class="spec-value">WH-${vehicle.warehouseId || 'N/A'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Factory</span>
+                            <span class="spec-value">FC-${vehicle.factoryId || 'N/A'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">ID</span>
+                            <span class="spec-value">#${vehicle.carId}</span>
+                        </div>
+                    </div>
+
+                    <div class="vehicle-price">
+                        ${formatPrice(vehicle.price)}
+                        <div class="price-label">HKD</div>
+                    </div>
+
+                    <div class="vehicle-actions">
+                        <button class="add-to-cart" onclick="addToCart(${vehicle.carId})">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Add to Cart</span>
+                        </button>
+                        <button class="wishlist-btn" onclick="toggleWishlist(${vehicle.carId})">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // ✅ ANGEPASST: Filter auf neue Datenstruktur
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const warehouseId = document.getElementById('warehouseFilter').value;
+        const maxPrice = document.getElementById('priceFilter').value;
+        const year = document.getElementById('yearFilter').value;
+        const factoryId = document.getElementById('factoryFilter').value;
+
+        filteredVehicles = allVehicles.filter(vehicle => {
+            const matchesSearch = !searchTerm || vehicle.modelName.toLowerCase().includes(searchTerm);
+            const matchesWarehouse = !warehouseId || vehicle.warehouseId == warehouseId;
+            const matchesPrice = !maxPrice || vehicle.price <= parseFloat(maxPrice);
+            const matchesYear = !year || vehicle.modelYear == year;
+            const matchesFactory = !factoryId || vehicle.factoryId == factoryId;
+            return matchesSearch && matchesWarehouse && matchesPrice && matchesYear && matchesFactory;
+        });
+
+        displayVehicles(filteredVehicles);
+        updateResultsCount();
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('warehouseFilter').value = '';
+        document.getElementById('priceFilter').value = '';
+        document.getElementById('yearFilter').value = '';
+        document.getElementById('factoryFilter').value = '';
+        document.getElementById('sortSelect').value = 'default';
+
+        filteredVehicles = [...allVehicles];
+        displayVehicles(filteredVehicles);
+        updateResultsCount();
+    }
+
+    function sortVehicles() {
+        const sortBy = document.getElementById('sortSelect').value;
+
+        switch(sortBy) {
+            case 'price-asc':
+                filteredVehicles.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                filteredVehicles.sort((a, b) => b.price - a.price);
+                break;
+            case 'year-desc':
+                filteredVehicles.sort((a, b) => b.modelYear - a.modelYear);
+                break;
+            case 'year-asc':
+                filteredVehicles.sort((a, b) => a.modelYear - b.modelYear);
+                break;
+            case 'name-asc':
+                filteredVehicles.sort((a, b) => a.modelName.localeCompare(b.modelName));
+                break;
+            default:
+                filteredVehicles = [...allVehicles];
+        }
+
+        displayVehicles(filteredVehicles);
+    }
+
+    function updateResultsCount() {
+        const count = filteredVehicles.length;
+        document.getElementById('resultsCount').textContent =
+            `${count} vehicle${count !== 1 ? 's' : ''} found`;
+    }
+
+    // Cart Functions
+    function addToCart(carId) {
+        const vehicle = allVehicles.find(v => v.carId === carId);
+        if (!vehicle) return;
+
+        const existingItem = cart.find(item => item.carId === carId);
+
+        if (existingItem) {
+            existingItem.quantity++;
+        } else {
+            cart.push({
+                ...vehicle,
+                quantity: 1
+            });
+        }
+
+        updateCartUI();
+        showNotification(`${vehicle.modelName} added to cart!`);
+    }
+
+    function updateQuantity(carId, change) {
+        const item = cart.find(i => i.carId === carId);
+        if (!item) return;
+
+        const newQuantity = item.quantity + change;
+
+        if (newQuantity < 1) {
+            return;
+        }
+
+        item.quantity = newQuantity;
+        updateCartUI();
+
+        if (document.getElementById('cartModal').classList.contains('active')) {
+            renderCart();
+        }
+    }
+
+    function removeFromCart(carId) {
+        if (confirm('Are you sure you want to remove this item from your cart?')) {
+            cart = cart.filter(item => item.carId !== carId);
+            updateCartUI();
+            if (document.getElementById('cartModal').classList.contains('active')) {
+                renderCart();
+            }
+            showNotification('Item removed from cart');
+        }
+    }
+
+    function updateCartUI() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-count').textContent = totalItems;
+    }
+
+    function openCart() {
+        renderCart();
+        document.getElementById('cartModal').classList.add('active');
+    }
+
+    function closeCart() {
+        document.getElementById('cartModal').classList.remove('active');
+    }
+
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const itemCount = document.getElementById('itemCount');
+        const cartTotal = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = `
+                <div class="empty-cart">
+                    <div class="empty-cart-icon">🛒</div>
+                    <h3>Your cart is empty</h3>
+                    <p>Add some vehicles to get started!</p>
+                </div>
+            `;
+            itemCount.textContent = '0';
+            cartTotal.textContent = 'HKD 0';
+            checkoutBtn.disabled = true;
+            return;
+        }
+
+        checkoutBtn.disabled = false;
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        itemCount.textContent = totalItems;
+        cartTotal.textContent = `HKD ${formatPrice(totalPrice)}`;
+
+        cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-image">🚗</div>
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.modelName}</div>
+                    <div class="cart-item-details">
+                        ${item.modelYear} | Warehouse ${item.warehouseId} | ID: #${item.carId}
+                    </div>
+                    <div class="cart-item-price">HKD ${formatPrice(item.price)} × ${item.quantity}</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" onclick="updateQuantity(${item.carId}, -1)">−</button>
+                        <span class="qty-display">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQuantity(${item.carId}, 1)">+</button>
+                        <button class="remove-btn" onclick="removeFromCart(${item.carId})">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function checkout() {
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        const summary = cart.map(item =>
+            `${item.quantity}x ${item.modelName} (${item.modelYear})`
+        ).join('\n');
+
+        alert(`Order Confirmed! 🎉\n\n${summary}\n\nTotal Items: ${totalItems}\nTotal Price: HKD ${formatPrice(totalPrice)}\n\nThank you for your purchase!`);
+
+        cart = [];
+        updateCartUI();
+        closeCart();
+    }
+
+    function toggleWishlist(carId) {
+        const button = event.currentTarget;
+        button.classList.toggle('active');
+        button.innerHTML = button.classList.contains('active') ?
+            '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+
+        const vehicle = allVehicles.find(v => v.carId === carId);
+        if (vehicle) {
+            const action = button.classList.contains('active') ? 'added to' : 'removed from';
+            showNotification(`${vehicle.modelName} ${action} wishlist!`);
+        }
+    }
+
+    function showAbout() {
+        alert('Toyota Hong Kong - Premium Vehicle Dealership\n\nWe offer the finest selection of Toyota vehicles with exceptional customer service.');
+    }
+
+    function showContact() {
+        alert('Contact Us:\n\n📍 Address: Toyota Hong Kong\n📞 Phone: +852 3000 0000\n📧 Email: info@toyotahk.com');
+    }
+
+    // Utility Functions
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('en-HK').format(price);
+    }
+
+    // Close modal on outside click
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+    });
+</script>
+</body>
+</html>

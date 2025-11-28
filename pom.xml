@@ -11,7 +11,7 @@
     <packaging>war</packaging>
 
     <name>automotive-delivery</name>
-    <description>Auto-Motive Delivery Management (ohne Spring)</description>
+    <description>Auto-Motive Delivery Management (Servlet + JDBC)</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -20,7 +20,7 @@
     </properties>
 
     <dependencies>
-        <!-- Servlet API (wird vom Container bereitgestellt: Tomcat/Jetty) -->
+        <!-- Jakarta Servlet API (für Tomcat 10+ / Jakarta EE 10) -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
@@ -35,14 +35,14 @@
             <version>9.0.0</version>
         </dependency>
 
-        <!-- Gson für JSON-Serialisierung -->
+        <!-- Gson: JSON-Serialisierung (kannst du optional in Servlets nutzen) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
 
-        <!-- Optional: JUnit für einfache Tests (ohne Spring) -->
+        <!-- JUnit 5 Tests (optional) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -54,7 +54,7 @@
     <build>
         <finalName>automotive-delivery</finalName>
         <plugins>
-            <!-- Compiler-Plugin (Java 17) -->
+            <!-- Java 17 Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -62,6 +62,16 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- War-Plugin (Standard reicht meist) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
         </plugins>

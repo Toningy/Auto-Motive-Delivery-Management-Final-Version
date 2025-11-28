@@ -12,6 +12,8 @@ public class Person {
     private Date birthdate;
     
     private String email;
+
+    private String address;
     
     public Person() {}
     
@@ -33,4 +35,6 @@ public class Person {
     public void setBirthdate(Date birthdate) { this.birthdate = birthdate; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 }
