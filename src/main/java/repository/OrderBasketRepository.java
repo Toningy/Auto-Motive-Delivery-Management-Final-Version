@@ -1,27 +1,122 @@
-package hk.edu.polyu.automotive_delivery.repository;
+package repository;
 
-import hk.edu.polyu.automotive_delivery.entity.OrderBasket;
-import hk.edu.polyu.automotive_delivery.entity.OrderBasketId;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import db.DBUtil;
+import model.OrderBasket;
+import model.OrderBasketId;
+import model.Order;
+import model.Car;
 
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
-@Repository
-public interface OrderBasketRepository extends JpaRepository<OrderBasket, OrderBasketId> {
-    
-    // Find all order baskets for a specific order
-    List<OrderBasket> findByOrder_OrderId(Integer orderId);
-    
-    // Find all order baskets containing a specific car
-    List<OrderBasket> findByCar_CarId(Integer carId);
-    
+public class OrderBasketRepository {
+
+    private OrderBasket mapRowToOrderBasket(ResultSet rs) throws SQLException {
+        int orderId = rs.getInt("order_id");
+        int carId = rs.getInt("car_id");
+
+        OrderBasketId id = new OrderBasketId(orderId, carId);
+        OrderBasket ob = new OrderBasket();
+        ob.setId(id);
+
+        Order order = new Order();
+        order.setOrderId(orderId);
+        ob.setOrder(order);
+
+        Car car = new Car();
+        car.setCarId(carId);
+        ob.setCar(car);
+
+        return ob;
+    }
+
+    // All baskets for a specific order
+    public List<OrderBasket> findByOrderId(Integer orderId) {
+        List<OrderBasket> result = new ArrayList<>();
+        String sql = "SELECT order_id, car_id FROM order_basket WHERE order_id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(mapRowToOrderBasket(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding order baskets by order id", e);
+        }
+        return result;
+    }
+
+    // All baskets for a specific car
+    public List<OrderBasket> findByCarId(Integer carId) {
+        List<OrderBasket> result = new ArrayList<>();
+        String sql = "SELECT order_id, car_id FROM order_basket WHERE car_id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, carId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(mapRowToOrderBasket(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding order baskets by car id", e);
+        }
+        return result;
+    }
+
     // Count how many times a car has been ordered
-    @Query("SELECT COUNT(ob) FROM OrderBasket ob WHERE ob.car.carId = :carId")
-    Long countOrdersForCar(Integer carId);
-    
+    public long countOrdersForCar(Integer carId) {
+        String sql = "SELECT COUNT(*) FROM order_basket WHERE car_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, carId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error counting orders for car", e);
+        }
+        return 0L;
+    }
+
     // Get all cars in a specific order
-    @Query("SELECT ob.car FROM OrderBasket ob WHERE ob.order.orderId = :orderId")
-    List<Object[]> findCarsInOrder(Integer orderId);
+    public List<Car> findCarsInOrder(Integer orderId) {
+        List<Car> result = new ArrayList<>();
+        String sql = "SELECT c.car_id, c.model_name, c.model_year, c.weight, c.price, c.warehouse_id, c.factory_id " +
+                     "FROM order_basket ob " +
+                     "JOIN car c ON ob.car_id = c.car_id " +
+                     "WHERE ob.order_id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Car c = new Car();
+                    c.setCarId(rs.getInt("car_id"));
+                    c.setModelName(rs.getString("model_name"));
+                    c.setModelYear((Integer) rs.getObject("model_year"));
+                    c.setWeight(rs.getBigDecimal("weight"));
+                    c.setPrice(rs.getBigDecimal("price"));
+                    c.setWarehouseId((Integer) rs.getObject("warehouse_id"));
+                    c.setFactoryId((Integer) rs.getObject("factory_id"));
+                    result.add(c);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding cars in order", e);
+        }
+        return result;
+    }
 }
