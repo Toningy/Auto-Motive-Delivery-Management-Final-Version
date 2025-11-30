@@ -1,40 +1,33 @@
-package model;
+package hk.edu.polyu.automotivedelivery.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 public class Order {
     private Integer orderId;
-    private Integer clientId;           // NEU: für JDBC
-    private Client client;              // optional für komplexe Abfragen
+    private Integer clientId;
     private Date orderDate;
-    private BigDecimal totalPrice;      // NEU: Gesamtpreis
-    private DeliveryMission deliveryMission;
+    private BigDecimal totalAmount;
+    private String status;
 
     public Order() {}
 
-    public Order(Integer clientId, Date orderDate, BigDecimal totalPrice) {
+    public Order(Integer clientId, Date orderDate, BigDecimal totalAmount) {
         this.clientId = clientId;
         this.orderDate = orderDate;
-        this.totalPrice = totalPrice;
+        this.totalAmount = totalAmount;
+        this.status = "PENDING";
     }
 
     // Getters and Setters
     public Integer getOrderId() { return orderId; }
     public void setOrderId(Integer orderId) { this.orderId = orderId; }
-
     public Integer getClientId() { return clientId; }
     public void setClientId(Integer clientId) { this.clientId = clientId; }
-
-    public Client getClient() { return client; }
-    public void setClient(Client client) { this.client = client; }
-
     public Date getOrderDate() { return orderDate; }
     public void setOrderDate(Date orderDate) { this.orderDate = orderDate; }
-
-    public BigDecimal getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
-
-    public DeliveryMission getDeliveryMission() { return deliveryMission; }
-    public void setDeliveryMission(DeliveryMission deliveryMission) { this.deliveryMission = deliveryMission; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

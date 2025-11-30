@@ -1,4 +1,4 @@
-package repository;
+package hk.edu.polyu.automotivedelivery.repository;
 
 import db.DBUtil;
 import model.DeliveryMission;
@@ -7,6 +7,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import hk.edu.polyu.automotivedelivery.db.DBUtil;
+import hk.edu.polyu.automotivedelivery.model.DeliveryMission;
+
 
 public class DeliveryMissionRepository {
 

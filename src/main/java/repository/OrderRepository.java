@@ -1,43 +1,52 @@
-package repository;
+package hk.edu.polyu.automotivedelivery.repository;
 
-import db.DBUtil;
-import model.Order;
-import model.Client;
-import model.DeliveryMission;
+import hk.edu.polyu.automotivedelivery.db.DBUtil;
+import hk.edu.polyu.automotivedelivery.model.Order;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class OrderRepository {
 
-    private Order mapRowToOrder(ResultSet rs) throws SQLException {
-        Order o = new Order();
-        o.setOrderId(rs.getInt("order_id"));
+    public List<Order> findAll() {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT order_id, client_id, order_date, total_price, status FROM orders";
 
-        Integer clientId = (Integer) rs.getObject("client_id");
-        if (clientId != null) {
-            Client c = new Client();
-            c.setClientId(clientId);
-            o.setClient(c);
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                orders.add(mapRowToOrder(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching all orders", e);
         }
+        return orders;
+    }
 
-        Date orderDate = rs.getDate("order_date");
-        o.setOrderDate(orderDate);
+    public Order findById(Integer orderId) {
+        String sql = "SELECT order_id, client_id, order_date, total_price, status FROM orders WHERE order_id = ?";
 
-        Integer missionId = (Integer) rs.getObject("mission_id");
-        if (missionId != null) {
-            DeliveryMission dm = new DeliveryMission();
-            dm.setMissionId(missionId);
-            o.setDeliveryMission(dm);
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToOrder(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching order by id", e);
         }
-        return o;
+        return null;
     }
 
     public List<Order> findByClientId(Integer clientId) {
-        List<Order> result = new ArrayList<>();
-        String sql = "SELECT order_id, client_id, order_date, mission_id FROM `order` WHERE client_id = ?";
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT order_id, client_id, order_date, total_price, status FROM orders WHERE client_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -45,49 +54,85 @@ public class OrderRepository {
             ps.setInt(1, clientId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    result.add(mapRowToOrder(rs));
+                    orders.add(mapRowToOrder(rs));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error finding orders by client id", e);
         }
-        return result;
+        return orders;
     }
 
-    public List<Order> findOrdersBetweenDates(Date startDate, Date endDate) {
-        List<Order> result = new ArrayList<>();
-        String sql = "SELECT order_id, client_id, order_date, mission_id FROM `order` WHERE order_date BETWEEN ? AND ?";
+    public Order save(Order order) {
+        String sql = "INSERT INTO orders (client_id, order_date, total_price, status) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setDate(1, new java.sql.Date(startDate.getTime()));
-            ps.setDate(2, new java.sql.Date(endDate.getTime()));
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    result.add(mapRowToOrder(rs));
+            ps.setInt(1, order.getClientId());
+            ps.setDate(2, new java.sql.Date(order.getOrderDate().getTime()));
+            ps.setBigDecimal(3, order.getTotalAmount());
+            ps.setString(4, order.getStatus());
+
+            ps.executeUpdate();
+
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    order.setOrderId(keys.getInt(1));
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding orders between dates", e);
+            throw new RuntimeException("Error saving order", e);
         }
-        return result;
+        return order;
     }
 
-    public List<Order> findOrdersWithoutDeliveryMission() {
-        List<Order> result = new ArrayList<>();
-        String sql = "SELECT order_id, client_id, order_date, mission_id FROM `order` WHERE mission_id IS NULL";
+    private Order mapRowToOrder(ResultSet rs) throws SQLException {
+        Order order = new Order();
+        order.setOrderId(rs.getInt("order_id"));
+        order.setClientId(rs.getInt("client_id"));
+        order.setOrderDate(rs.getDate("order_date"));
+        order.setTotalAmount(rs.getBigDecimal("total_price"));
+        order.setStatus(rs.getString("status"));
+        return order;
+    }
 
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                result.add(mapRowToOrder(rs));
+    public Long countOrdersBetweenDates(Date startDate, Date endDate) {
+    String sql = "SELECT COUNT(*) FROM orders WHERE order_date BETWEEN ? AND ?";
+    
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setDate(1, new java.sql.Date(startDate.getTime()));
+        ps.setDate(2, new java.sql.Date(endDate.getTime()));
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getLong(1);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding orders without delivery mission", e);
         }
-        return result;
+    } catch (SQLException e) {
+        throw new RuntimeException("Error counting orders between dates", e);
     }
+    return 0L;
+}
+
+    public Long countOrdersByStatus(String status) {
+    String sql = "SELECT COUNT(*) FROM orders WHERE status = ?";
+    
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, status);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        }
+    } catch (SQLException e) {
+        throw new RuntimeException("Error counting orders by status", e);
+    }
+    return 0L;
+}
 }

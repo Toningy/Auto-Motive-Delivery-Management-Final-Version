@@ -1,28 +1,28 @@
-package web;
+package hk.edu.polyu.automotivedelivery.web;
 
-import db.DBUtil;
+import hk.edu.polyu.automotivedelivery.service.ReportService;
+import com.google.gson.Gson;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet("/api/reports/*")
 public class ReportServlet extends HttpServlet {
+    private ReportService reportService = new ReportService();
+    private Gson gson = new Gson();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-
+        
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.setHeader("Access-Control-Allow-Origin", "*");
@@ -30,44 +30,89 @@ public class ReportServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         try {
-            if ("/revenue".equals(pathInfo)) {
-                String startDateStr = req.getParameter("startDate");
-                String endDateStr = req.getParameter("endDate");
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                Date startDate = sdf.parse(startDateStr);
-                Date endDate = sdf.parse(endDateStr);
-
-                Double revenue = getTotalRevenue(startDate, endDate);
-                Long totalOrders = getTotalOrders(startDate, endDate);
-                Long completedMissions = getCompletedMissions(startDate, endDate);
-
-                Double avgOrderValue = totalOrders > 0 ? revenue / totalOrders : 0.0;
-
-                String json = "{\"startDate\":\"" + startDateStr + "\"," +
-                        "\"endDate\":\"" + endDateStr + "\"," +
-                        "\"totalRevenue\":" + revenue + "," +
-                        "\"totalOrders\":" + totalOrders + "," +
-                        "\"completedMissions\":" + completedMissions + "," +
-                        "\"averageOrderValue\":" + avgOrderValue + "}";
-
-                resp.getWriter().write(json);
-
+            if (pathInfo == null || pathInfo.equals("/")) {
+                // Return available report types
+                Map<String, String> availableReports = new HashMap<>();
+                availableReports.put("revenue", "/api/reports/revenue?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD");
+                availableReports.put("delivery-performance", "/api/reports/delivery-performance");
+                availableReports.put("order-summary", "/api/reports/order-summary");
+                availableReports.put("delivery-summary", "/api/reports/delivery-summary");
+                
+                resp.getWriter().write(gson.toJson(availableReports));
+                
+            } else if ("/revenue".equals(pathInfo)) {
+                handleRevenueReport(req, resp);
+                
             } else if ("/delivery-performance".equals(pathInfo)) {
-                // Dummy-Daten – kannst du später mit echten SQL-Queries ersetzen
-                String json = "{\"totalMissions\":150," +
-                        "\"completedMissions\":120," +
-                        "\"successRate\":80.0," +
-                        "\"averageDeliveryTime\":\"2.5 days\"}";
-                resp.getWriter().write(json);
+                handleDeliveryPerformanceReport(resp);
+                
+            } else if ("/order-summary".equals(pathInfo)) {
+                handleOrderSummaryReport(resp);
+                
+            } else if ("/delivery-summary".equals(pathInfo)) {
+                handleDeliverySummaryReport(resp);
+                
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                resp.getWriter().write("{\"error\":\"Unknown report endpoint\"}");
+                resp.getWriter().write("{\"error\":\"Report endpoint not found\"}");
             }
 
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{\"error\":\"" + escape(e.getMessage()) + "\"}");
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleRevenueReport(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String startDateStr = req.getParameter("startDate");
+        String endDateStr = req.getParameter("endDate");
+
+        if (startDateStr == null || endDateStr == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"startDate and endDate parameters are required\"}");
+            return;
+        }
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date startDate = sdf.parse(startDateStr);
+            Date endDate = sdf.parse(endDateStr);
+
+            Map<String, Object> report = reportService.getSalesReport(startDate, endDate);
+            resp.getWriter().write(gson.toJson(report));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Invalid date format. Use YYYY-MM-DD\"}");
+        }
+    }
+
+    private void handleDeliveryPerformanceReport(HttpServletResponse resp) throws IOException {
+        try {
+            Map<String, Object> performance = reportService.getDeliveryPerformanceReport();
+            resp.getWriter().write(gson.toJson(performance));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\":\"Error generating delivery performance report\"}");
+        }
+    }
+
+    private void handleOrderSummaryReport(HttpServletResponse resp) throws IOException {
+        try {
+            Map<String, Long> summary = reportService.getOrderStatusSummary();
+            resp.getWriter().write(gson.toJson(summary));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\":\"Error generating order summary report\"}");
+        }
+    }
+
+    private void handleDeliverySummaryReport(HttpServletResponse resp) throws IOException {
+        try {
+            Map<String, Long> summary = reportService.getDeliveryStatusSummary();
+            resp.getWriter().write(gson.toJson(summary));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\":\"Error generating delivery summary report\"}");
         }
     }
 
@@ -77,66 +122,5 @@ public class ReportServlet extends HttpServlet {
         resp.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
         resp.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    // DAO Methods
-    private Double getTotalRevenue(Date startDate, Date endDate) throws SQLException {
-        String sql = "SELECT SUM(total_price) FROM `order` WHERE order_date BETWEEN ? AND ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setDate(1, new java.sql.Date(startDate.getTime()));
-            ps.setDate(2, new java.sql.Date(endDate.getTime()));
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble(1);
-                }
-            }
-        }
-        return 0.0;
-    }
-
-    private Long getTotalOrders(Date startDate, Date endDate) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM `order` WHERE order_date BETWEEN ? AND ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setDate(1, new java.sql.Date(startDate.getTime()));
-            ps.setDate(2, new java.sql.Date(endDate.getTime()));
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-        }
-        return 0L;
-    }
-
-    private Long getCompletedMissions(Date startDate, Date endDate) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM delivery_mission " +
-                "WHERE status = 'completed' AND end_date BETWEEN ? AND ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setDate(1, new java.sql.Date(startDate.getTime()));
-            ps.setDate(2, new java.sql.Date(endDate.getTime()));
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-        }
-        return 0L;
-    }
-
-    private String escape(String s) {
-        if (s == null) return "";
-        return s.replace("\"", "\\\"").replace("\n", " ");
     }
 }

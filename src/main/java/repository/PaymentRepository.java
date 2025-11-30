@@ -1,4 +1,4 @@
-package repository;
+package hk.edu.polyu.automotivedelivery.repository;
 
 import db.DBUtil;
 import model.Payment;
@@ -70,19 +70,20 @@ public class PaymentRepository {
 
     public BigDecimal getTotalRevenueBetweenDates(Date startDate, Date endDate) {
         String sql = "SELECT SUM(amount) FROM payment WHERE payment_date BETWEEN ? AND ?";
+    
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+        
             ps.setDate(1, new java.sql.Date(startDate.getTime()));
             ps.setDate(2, new java.sql.Date(endDate.getTime()));
+        
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    BigDecimal sum = rs.getBigDecimal(1);
-                    return sum != null ? sum : BigDecimal.ZERO;
+                    return rs.getBigDecimal(1);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error calculating total revenue between dates", e);
+        throw new RuntimeException("Error calculating total revenue between dates", e);
         }
         return BigDecimal.ZERO;
     }

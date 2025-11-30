@@ -158,3 +158,19 @@ CREATE TABLE order_basket (
                               CONSTRAINT fk_basket_car
                                   FOREIGN KEY (car_id) REFERENCES car (car_id)
 );
+
+-- Add users table for authentication
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(100),
+    role VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add authentication demo data
+INSERT INTO users (email, password, name, role) VALUES 
+('client@example.com', 'password123', 'John Client', 'CLIENT'),
+('manager@example.com', 'password123', 'Alex Manager', 'MANAGER'),
+('delivery@example.com', 'password123', 'Olivia Driver', 'DELIVERY_MAN');

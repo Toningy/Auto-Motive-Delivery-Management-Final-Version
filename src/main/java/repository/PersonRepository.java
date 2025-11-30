@@ -1,5 +1,4 @@
-package repository;
-
+package hk.edu.polyu.automotivedelivery.repository;
 import db.DBUtil;
 import model.Person;
 
