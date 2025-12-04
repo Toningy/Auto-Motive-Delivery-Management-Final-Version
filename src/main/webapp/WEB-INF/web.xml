@@ -14,7 +14,7 @@
     <!-- CORS Filter -->
     <filter>
         <filter-name>CorsFilter</filter-name>
-        <filter-class>hk.edu.polyu.automotivedelivery.web.CorsFilter</filter-class>
+        <filter-class>web.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>
