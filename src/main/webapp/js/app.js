@@ -1,5 +1,5 @@
 // app.js
-const API_BASE = window.location.origin + '/automotive-delivery';
+const API_BASE = window.location.origin;
 const API_URL = API_BASE + '/api';
 let allVehicles = [];
 let filteredVehicles = [];

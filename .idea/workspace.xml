@@ -10,10 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="981f3a11-b0fd-4279-adf9-5c68464c544f" name="Changes" comment="pushi">
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/automotive_delivery_war_exploded.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/web/Cors" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/web/ReportServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/web/ReportServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/WEB-INF/classes/web/CarServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/WEB-INF/classes/web/CarServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/web/CarServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/web/CarServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/web/CarServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/web/CarServlet.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -220,7 +222,7 @@
       <workItem from="1764851530207" duration="530000" />
       <workItem from="1764852064030" duration="860000" />
       <workItem from="1764852929171" duration="3230000" />
-      <workItem from="1764856683649" duration="2659000" />
+      <workItem from="1764856683649" duration="5397000" />
     </task>
     <task id="LOCAL-00001" summary="POM &amp; DBUTIL.java insert">
       <option name="closed" value="true" />
@@ -342,7 +344,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764857398955</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="pushi">
+      <option name="closed" value="true" />
+      <created>1764859788268</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1764859788268</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
