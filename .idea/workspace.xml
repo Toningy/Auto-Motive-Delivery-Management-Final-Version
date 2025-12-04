@@ -9,7 +9,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="981f3a11-b0fd-4279-adf9-5c68464c544f" name="Changes" comment="pom push" />
+    <list default="true" id="981f3a11-b0fd-4279-adf9-5c68464c544f" name="Changes" comment="pushi">
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/service/ReportService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,6 +68,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Tomcat Server.localhost.executor": "Run",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
@@ -78,6 +87,9 @@
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/webapp" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="" />
     </key>
   </component>
   <component name="RunManager">
@@ -213,6 +225,7 @@
       <workItem from="1764851530207" duration="530000" />
       <workItem from="1764852064030" duration="860000" />
       <workItem from="1764852929171" duration="3230000" />
+      <workItem from="1764856683649" duration="674000" />
     </task>
     <task id="LOCAL-00001" summary="POM &amp; DBUTIL.java insert">
       <option name="closed" value="true" />
@@ -302,7 +315,23 @@
       <option name="project" value="LOCAL" />
       <updated>1764856589558</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="pushi">
+      <option name="closed" value="true" />
+      <created>1764856953203</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1764856953203</updated>
+    </task>
+    <task id="LOCAL-00013" summary="pushi">
+      <option name="closed" value="true" />
+      <created>1764857001803</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764857001803</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -327,7 +356,8 @@
     <MESSAGE value="add stuff" />
     <MESSAGE value="sql stuff" />
     <MESSAGE value="pom push" />
-    <option name="LAST_COMMIT_MESSAGE" value="pom push" />
+    <MESSAGE value="pushi" />
+    <option name="LAST_COMMIT_MESSAGE" value="pushi" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
