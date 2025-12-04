@@ -10,6 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="981f3a11-b0fd-4279-adf9-5c68464c544f" name="Changes" comment="pushi">
+      <change afterPath="$PROJECT_DIR$/.idea/artifacts/automotive_delivery_war_exploded.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/web/Cors" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/web/ReportServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/web/ReportServlet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -71,9 +74,9 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "settings.qodana",
     "vue.rearranger.settings.migration": "true"
   }
@@ -169,9 +172,7 @@
       </ConfigurationWrapper>
       <method v="2">
         <option name="Make" enabled="true" />
-        <option name="BuildArtifacts" enabled="true">
-          <artifact name="automotive-delivery:war exploded" />
-        </option>
+        <option name="BuildArtifacts" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -219,7 +220,7 @@
       <workItem from="1764851530207" duration="530000" />
       <workItem from="1764852064030" duration="860000" />
       <workItem from="1764852929171" duration="3230000" />
-      <workItem from="1764856683649" duration="707000" />
+      <workItem from="1764856683649" duration="2659000" />
     </task>
     <task id="LOCAL-00001" summary="POM &amp; DBUTIL.java insert">
       <option name="closed" value="true" />
@@ -333,7 +334,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764857372521</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="pushi">
+      <option name="closed" value="true" />
+      <created>1764857398955</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1764857398955</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

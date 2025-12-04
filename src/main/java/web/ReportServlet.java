@@ -75,8 +75,13 @@ public class ReportServlet extends HttpServlet {
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date startDate = sdf.parse(startDateStr);
-            Date endDate = sdf.parse(endDateStr);
+
+            java.util.Date utilStart = sdf.parse(startDateStr);
+            Date startDate = new Date(utilStart.getTime());
+
+            java.util.Date utilEnd = sdf.parse(endDateStr);
+            Date endDate = new Date(utilEnd.getTime());
+
 
             Map<String, Object> report = reportService.getSalesReport(startDate, endDate);
             resp.getWriter().write(gson.toJson(report));
