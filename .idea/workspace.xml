@@ -11,11 +11,17 @@
   <component name="ChangeListManager">
     <list default="true" id="981f3a11-b0fd-4279-adf9-5c68464c544f" name="Changes" comment="pushi">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/WEB-INF/classes/web/CarServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/WEB-INF/classes/web/CarServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/automotive_delivery_war_exploded/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/web/CarServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/web/CarServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql/Schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/Schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/webapp/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/web/CarServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/web/CarServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/hk/edu/polyu/automotivedelivery/model/DeliveryMan.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/hk/edu/polyu/automotivedelivery/model/DeliveryVehicle.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/hk/edu/polyu/automotivedelivery/model/Person.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/hk/edu/polyu/automotivedelivery/model/Staff.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +74,11 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Tomcat Server.Server.executor": "Run",
+    "Tomcat Server.Tomcat 10.1.49.executor": "Run",
+    "Tomcat Server.Tomcat.executor": "Coverage",
     "Tomcat Server.localhost.executor": "Run",
+    "Tomcat Server.server.executor": "Run",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -91,18 +101,25 @@
       <recent name="" />
     </key>
   </component>
+  <component name="RunDashboard">
+    <option name="excludedTypes">
+      <set>
+        <option value="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" />
+      </set>
+    </option>
+  </component>
   <component name="RunManager">
-    <configuration name="localhost" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.49" ALTERNATIVE_JRE_ENABLED="false">
+    <configuration name="server" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.49" ALTERNATIVE_JRE_ENABLED="false">
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="automotive-delivery:war exploded">
           <settings>
-            <option name="CONTEXT_PATH" value="/" />
+            <option name="CONTEXT_PATH" value="/automotive_delivery_war_exploded" />
           </settings>
         </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="f707a478-2639-4ae3-950a-3eca5a286b66" />
+        <option name="BASE_DIRECTORY_NAME" value="34ea13e0-d87c-4be3-8842-33d8ba621b0a" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -110,7 +127,7 @@
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="64266" />
+        <option name="DEBUG_PORT" value="56675" />
       </RunnerSettings>
       <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
         <option name="USE_ENV_VARIABLES" value="true" />
@@ -174,7 +191,9 @@
       </ConfigurationWrapper>
       <method v="2">
         <option name="Make" enabled="true" />
-        <option name="BuildArtifacts" enabled="true" />
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="automotive-delivery:war exploded" />
+        </option>
       </method>
     </configuration>
   </component>
@@ -222,7 +241,7 @@
       <workItem from="1764851530207" duration="530000" />
       <workItem from="1764852064030" duration="860000" />
       <workItem from="1764852929171" duration="3230000" />
-      <workItem from="1764856683649" duration="5397000" />
+      <workItem from="1764856683649" duration="15384000" />
     </task>
     <task id="LOCAL-00001" summary="POM &amp; DBUTIL.java insert">
       <option name="closed" value="true" />
@@ -352,7 +371,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764859788268</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="pushi">
+      <option name="closed" value="true" />
+      <created>1764862472795</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1764862472795</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -383,5 +410,8 @@
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Auto_Motive_Delivery_Management_Final_Version$Tomcat.ic" NAME="Tomcat Coverage Results" MODIFIED="1764912451823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
   </component>
 </project>
