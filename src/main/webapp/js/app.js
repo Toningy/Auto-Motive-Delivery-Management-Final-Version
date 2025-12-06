@@ -78,14 +78,38 @@ async function register() {
             body: JSON.stringify({ name, email, password, role })
         });
 
-        const data = await response.text();
-        if (response.ok) {
-            showNotification('Registration successful! Please login.');
-            showLoginForm();
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Auto-login after successful registration
+            currentUser = {
+                id: data.id,
+                email: data.email,
+                name: data.name,
+                role: data.role,
+                avatar: data.name?.charAt(0)?.toUpperCase() || 'U'
+            };
+            userRole = data.role;
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateUIForUserRole();
+            closeAuthModal();
+            showNotification(`Welcome, ${currentUser.name}! Registration successful.`);
+
+            // Load appropriate dashboard
+            if (currentUser.role === 'CLIENT') {
+                loadClientOrders();
+            } else if (currentUser.role === 'MANAGER') {
+                loadAllOrders();
+                loadPendingMissions();
+            } else if (currentUser.role === 'DELIVERY_MAN') {
+                loadDeliveryMissions();
+            }
         } else {
-            showNotification(data || 'Registration failed', 'error');
+            showNotification(data.error || 'Registration failed', 'error');
         }
     } catch (error) {
+        console.error('Registration error:', error);
         showNotification('Registration failed. Please try again.', 'error');
     }
 }
@@ -108,7 +132,8 @@ async function login() {
 
         const data = await response.json();
 
-        if (response.ok) {
+        if (response.ok && data.success) {
+            // Updated: Get data directly from response, not from data.user
             currentUser = {
                 id: data.id,
                 email: data.email,
@@ -132,9 +157,10 @@ async function login() {
                 loadDeliveryMissions();
             }
         } else {
-            showNotification(data || 'Login failed', 'error');
+            showNotification(data.error || 'Login failed', 'error');
         }
     } catch (error) {
+        console.error('Login error:', error);
         showNotification('Login failed. Please try again.', 'error');
     }
 }
@@ -197,7 +223,6 @@ function updateUIForUserRole() {
     document.getElementById('userMenu').style.display = 'flex';
     document.getElementById('loginButton').style.display = 'none';
 }
-
 
 function quickLogin(role) {
     const demoAccounts = {
