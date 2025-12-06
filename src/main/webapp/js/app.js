@@ -1,5 +1,5 @@
 // ==================== BASE API CONFIG ====================
-
+alert("app.js loaded");
 // Context-Path automatisch bestimmen (z.B. "/automotive_delivery_war_exploded")
 const pathParts = window.location.pathname.split('/').filter(Boolean);
 const CONTEXT_PATH = pathParts.length > 0 ? '/' + pathParts[0] : '';
@@ -166,14 +166,26 @@ function logout() {
 }
 
 function updateUIForUserRole() {
-    if (!currentUser) return;
+    // Falls kein User oder die Rolle fehlt → UI nicht aktualisieren
+    if (!currentUser || !currentUser.role) {
+        // Falls kein Nutzer eingeloggt, Login-Button zeigen
+        const loginBtn = document.getElementById('loginButton');
+        const userMenu = document.getElementById('userMenu');
 
-    document.getElementById('userName').textContent = currentUser.name;
-    document.getElementById('userRole').textContent = currentUser.role.toLowerCase();
-    document.getElementById('userAvatar').textContent = currentUser.avatar;
-    document.getElementById('userMenu').style.display = 'flex';
-    document.getElementById('loginButton').style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (userMenu) userMenu.style.display = 'none';
+        return;
+    }
 
+    // Role kann jetzt sicher gelesen werden
+    const roleLower = currentUser.role.toLowerCase();
+
+    document.getElementById('userName').textContent = currentUser.name || 'User';
+    document.getElementById('userRole').textContent = roleLower;
+    document.getElementById('userAvatar').textContent =
+        currentUser.name?.charAt(0)?.toUpperCase() || 'U';
+
+    // Menüpunkt-Visibility je nach Rolle
     document.getElementById('clientLink').style.display =
         currentUser.role === 'CLIENT' ? 'block' : 'none';
     document.getElementById('managerLink').style.display =
@@ -181,14 +193,11 @@ function updateUIForUserRole() {
     document.getElementById('deliveryLink').style.display =
         currentUser.role === 'DELIVERY_MAN' ? 'block' : 'none';
 
-    if (currentUser.role === 'CLIENT') {
-        showClientDashboard();
-    } else if (currentUser.role === 'MANAGER') {
-        showManagerDashboard();
-    } else if (currentUser.role === 'DELIVERY_MAN') {
-        showDeliveryDashboard();
-    }
+    // User menu anzeigen, Login verstecken
+    document.getElementById('userMenu').style.display = 'flex';
+    document.getElementById('loginButton').style.display = 'none';
 }
+
 
 function quickLogin(role) {
     const demoAccounts = {
