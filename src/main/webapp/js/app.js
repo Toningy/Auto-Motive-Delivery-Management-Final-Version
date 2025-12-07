@@ -497,25 +497,71 @@ function displayClientOrders(orders) {
 async function loadAllOrders() {
     try {
         const response = await fetch(`${API_URL}/orders`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const orders = await response.json();
         displayAllOrders(orders);
     } catch (error) {
         console.error('Error loading all orders:', error);
         document.getElementById('inventoryList').innerHTML =
-            '<div class="no-results">Error loading orders</div>';
+            '<div class="no-results">Error loading orders: ' + error.message + '</div>';
     }
 }
 
 async function loadPendingMissions() {
     try {
         const response = await fetch(`${API_URL}/delivery/missions/pending`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         const missions = await response.json();
         displayPendingMissions(missions);
     } catch (error) {
         console.error('Error loading pending missions:', error);
         document.getElementById('deliveryMissionsList').innerHTML =
-            '<div class="no-results">Error loading missions</div>';
+            '<div class="no-results">Error loading missions: ' + error.message + '</div>';
     }
+}
+
+function displayPendingMissions(missions) {
+    const container = document.getElementById('deliveryMissionsList');
+    if (!missions || missions.length === 0) {
+        container.innerHTML = '<div class="no-results">No pending delivery missions</div>';
+        return;
+    }
+
+    // Update counters safely
+    const pendingCount = missions.filter(m => m.status === 'PENDING').length;
+    const inProgressCount = missions.filter(m => m.status === 'IN_PROGRESS').length;
+    const completedCount = missions.filter(m => m.status === 'COMPLETED').length;
+    
+    document.getElementById('pendingMissions').textContent = pendingCount;
+    document.getElementById('inProgressMissions').textContent = inProgressCount;
+    document.getElementById('completedMissions').textContent = completedCount;
+
+    // Display missions with safe data handling
+    container.innerHTML = missions.map(mission => {
+        // Safely extract data with fallbacks
+        const missionId = mission.missionId || 'N/A';
+        const status = mission.status || 'UNKNOWN';
+        const orderId = (mission.order && mission.order.orderId) || mission.orderId || 'N/A';
+        const customerName = mission.customerName || 'Unknown Customer';
+        const deliveryAddress = mission.deliveryAddress || 'No address provided';
+        const customerPhone = mission.customerPhone || 'No phone';
+
+        return `
+        <div class="mission-item">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <strong>Mission #${missionId}</strong>
+                <span class="status-badge pending">${status}</span>
+            </div>
+            <div style="font-size:14px;">Order: #${orderId}</div>
+            <div style="font-size:14px;">Customer: ${customerName}</div>
+            <div style="font-size:14px;">Address: ${deliveryAddress}</div>
+            <div style="font-size:14px;">Phone: ${customerPhone}</div>
+        </div>
+        `;
+    }).join('');
 }
 
 async function loadDeliveryMen() {
@@ -535,17 +581,35 @@ async function loadManagers() {
 
 function displayAllOrders(orders) {
     const container = document.getElementById('inventoryList');
+    
+    // Clear loading message
+    container.innerHTML = '';
+    
     if (!orders || orders.length === 0) {
         container.innerHTML = '<div class="no-results">No orders found</div>';
         return;
     }
 
-    container.innerHTML = orders.map(order => `
+    container.innerHTML = orders.map(order => {
+        // Safely get client name with fallback
+        const clientName = order.client && order.client.person && order.client.person.name 
+            ? order.client.person.name 
+            : `Client #${order.clientId}`;
+        
+        // Safely get delivery mission status
+        const hasDeliveryMission = order.deliveryMission && order.deliveryMission.status;
+        const missionStatus = hasDeliveryMission ? order.deliveryMission.status : 'PENDING';
+        const hasDeliveryMan = hasDeliveryMission && order.deliveryMission.deliveryMan;
+        const deliveryManName = hasDeliveryMan && order.deliveryMission.deliveryMan.staff && order.deliveryMission.deliveryMan.staff.person
+            ? order.deliveryMission.deliveryMan.staff.person.name
+            : 'Not assigned';
+        
+        return `
         <div class="order-item">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div>
                     <strong>Order #${order.orderId}</strong>
-                    <div style="font-size:12px;color:#888;">Client: ${order.client.person.name}</div>
+                    <div style="font-size:12px;color:#888;">Client: ${clientName}</div>
                 </div>
                 <span class="status-badge ${order.status.toLowerCase()}">
                     ${order.status}
@@ -553,6 +617,7 @@ function displayAllOrders(orders) {
             </div>
             <div style="font-size:14px;">Date: ${new Date(order.orderDate).toLocaleDateString()}</div>
             <div style="font-size:14px;">Total: HKD ${formatPrice(order.totalAmount)}</div>
+            
             ${!order.deliveryMission || order.deliveryMission.status === 'PENDING' ? `
                 <div style="margin-top:10px;">
                     <select id="deliveryMan-${order.orderId}" class="form-input" style="margin-bottom:5px;">
@@ -567,14 +632,13 @@ function displayAllOrders(orders) {
                 </div>
             ` : `
                 <div style="margin-top:8px;">
-                    <strong>Delivery:</strong> ${order.deliveryMission.status}
-                    ${order.deliveryMission.deliveryMan
-        ? `<br>Driver: ${order.deliveryMission.deliveryMan.staff.person.name}`
-        : ''}
+                    <strong>Delivery:</strong> ${missionStatus}
+                    ${hasDeliveryMan ? `<br>Driver: ${deliveryManName}` : ''}
                 </div>
             `}
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function displayPendingMissions(missions) {
@@ -613,10 +677,15 @@ async function assignDelivery(orderId) {
     }
 
     try {
+        // Get manager ID from current user - IMPORTANT!
+        const managerId = currentUser ? currentUser.id : 5; // fallback to demo manager
+        
         const assignmentData = {
             deliveryManId: parseInt(deliveryManId, 10),
-            managerId: currentUser.id
+            managerId: parseInt(managerId, 10)  // ADD THIS LINE!
         };
+
+        console.log("Assignment data:", assignmentData); // Debug log
 
         const response = await fetch(`${API_URL}/orders/${orderId}/assign-delivery`, {
             method: 'POST',
@@ -624,16 +693,18 @@ async function assignDelivery(orderId) {
             body: JSON.stringify(assignmentData)
         });
 
+        const responseText = await response.text();
+        console.log("Response:", responseText); // Debug log
+
         if (response.ok) {
             showNotification('Delivery assigned successfully!');
-            loadAllOrders();
-            loadPendingMissions();
+            loadAllOrders(); // Refresh the orders list
         } else {
-            const error = await response.text();
-            showNotification('Assignment failed: ' + error, 'error');
+            showNotification('Assignment failed: ' + responseText, 'error');
         }
     } catch (error) {
-        showNotification('Assignment failed. Please try again.', 'error');
+        console.error('Assignment error:', error);
+        showNotification('Assignment failed: ' + error.message, 'error');
     }
 }
 

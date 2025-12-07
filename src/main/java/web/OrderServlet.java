@@ -32,7 +32,7 @@ public class OrderServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                List<Order> orders = getAllOrders();
+                List<Map<String, Object>> orders = getAllOrders();
                 resp.getWriter().write(gson.toJson(orders));
             } else if (pathInfo.startsWith("/client/")) {
                 String clientIdStr = pathInfo.substring("/client/".length());
@@ -65,6 +65,14 @@ public class OrderServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.setHeader("Access-Control-Allow-Origin", "*");
+
+        String pathInfo = req.getPathInfo();
+        
+        // Handle assign-delivery requests
+        if (pathInfo != null && pathInfo.contains("/assign-delivery")) {
+            handleAssignDelivery(req, resp);
+            return;
+        }
 
         try {
             String body = req.getReader().lines().reduce("", (acc, line) -> acc + line);
@@ -108,6 +116,67 @@ public class OrderServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleAssignDelivery(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = req.getPathInfo();
+        String orderIdStr = path.substring(1, path.indexOf("/assign"));
+        int orderId = Integer.parseInt(orderIdStr);
+        
+        Map<String, Object> body = gson.fromJson(req.getReader(), Map.class);
+        
+        // SAFELY parse with null checks
+        Integer deliveryManId = null;
+        Integer managerId = null;
+        
+        if (body.get("deliveryManId") != null) {
+            deliveryManId = ((Double) body.get("deliveryManId")).intValue();
+        }
+        
+        if (body.get("managerId") != null) {
+            managerId = ((Double) body.get("managerId")).intValue();
+        }
+        
+        if (deliveryManId == null || managerId == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Missing deliveryManId or managerId\"}");
+            return;
+        }
+        
+        try (Connection conn = DBUtil.getConnection()) {
+            // Update delivery mission
+            String sql = "UPDATE delivery_mission SET delivery_man_id = ?, status = 'ASSIGNED' WHERE order_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, deliveryManId);
+                ps.setInt(2, orderId);
+                ps.executeUpdate();
+            }
+            
+            // Log assignment (optional - create this table if needed)
+            try {
+                String logSql = "INSERT INTO delivery_assignment_log (order_id, delivery_man_id, manager_id, assigned_date) VALUES (?, ?, ?, NOW())";
+                try (PreparedStatement ps = conn.prepareStatement(logSql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, deliveryManId);
+                    ps.setInt(3, managerId);
+                    ps.executeUpdate();
+                }
+            } catch (SQLException e) {
+                // Table might not exist, that's ok
+                System.out.println("Note: delivery_assignment_log table not found, skipping log");
+            }
+            
+            resp.getWriter().write("{\"success\":true,\"message\":\"Delivery assigned\"}");
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\":\"Database error: " + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
@@ -222,27 +291,88 @@ public class OrderServlet extends HttpServlet {
         }
     }
 
-    private List<Order> getAllOrders() {
-        List<Order> orders = new ArrayList<>();
-        String sql = "SELECT order_id, client_id, order_date, total_price, status FROM orders";
+    private List<Map<String, Object>> getAllOrders() {
+        List<Map<String, Object>> orders = new ArrayList<>();
+        String sql = "SELECT o.order_id, o.client_id, o.order_date, o.total_price, o.status, " +
+                     "p.name as client_name, " +
+                     "dm.mission_id, dm.status as delivery_status, dm.delivery_man_id " +
+                     "FROM orders o " +
+                     "LEFT JOIN person p ON o.client_id = p.person_id " +
+                     "LEFT JOIN delivery_mission dm ON o.order_id = dm.order_id " +
+                     "ORDER BY o.order_date DESC";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             
             while (rs.next()) {
-                Order order = new Order();
-                order.setOrderId(rs.getInt("order_id"));
-                order.setClientId(rs.getInt("client_id"));
-                order.setOrderDate(rs.getDate("order_date"));
-                order.setTotalAmount(rs.getBigDecimal("total_price"));
-                order.setStatus(rs.getString("status"));
+                Map<String, Object> order = new HashMap<>();
+                order.put("orderId", rs.getInt("order_id"));
+                order.put("clientId", rs.getInt("client_id"));
+                order.put("orderDate", rs.getDate("order_date"));
+                order.put("totalAmount", rs.getBigDecimal("total_price"));
+                order.put("status", rs.getString("status"));
+                
+                // Add client info
+                Map<String, Object> client = new HashMap<>();
+                Map<String, Object> person = new HashMap<>();
+                person.put("name", rs.getString("client_name"));
+                client.put("person", person);
+                order.put("client", client);
+                
+                // Add delivery mission if exists
+                if (rs.getInt("mission_id") > 0) {
+                    Map<String, Object> mission = new HashMap<>();
+                    mission.put("missionId", rs.getInt("mission_id"));
+                    mission.put("status", rs.getString("delivery_status"));
+                    
+                    // Get delivery man if assigned
+                    Integer deliveryManId = rs.getInt("delivery_man_id");
+                    if (deliveryManId > 0) {
+                        mission.put("deliveryMan", getDeliveryManDetails(deliveryManId));
+                    }
+                    
+                    order.put("deliveryMission", mission);
+                }
+                
                 orders.add(order);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return orders;
+    }
+
+    private Map<String, Object> getDeliveryManDetails(Integer deliveryManId) {
+        if (deliveryManId == null) return null;
+        
+        String sql = "SELECT dm.staff_id, p.name " +
+                     "FROM delivery_man dm " +
+                     "JOIN staff s ON dm.staff_id = s.staff_id " +
+                     "JOIN person p ON s.staff_id = p.person_id " +
+                     "WHERE dm.staff_id = ?";
+        
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, deliveryManId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> deliveryMan = new HashMap<>();
+                    Map<String, Object> staff = new HashMap<>();
+                    Map<String, Object> person = new HashMap<>();
+                    
+                    person.put("name", rs.getString("name"));
+                    staff.put("person", person);
+                    deliveryMan.put("staff", staff);
+                    
+                    return deliveryMan;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private List<Order> getOrdersByClientId(Integer clientId) {
@@ -299,7 +429,7 @@ public class OrderServlet extends HttpServlet {
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) {
         resp.setHeader("Access-Control-Allow-Origin", "*");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
         resp.setStatus(HttpServletResponse.SC_OK);
     }
