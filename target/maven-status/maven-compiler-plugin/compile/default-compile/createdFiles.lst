@@ -1,7 +1,9 @@
+web/CorsFilter.class
 repository/DeliveryVehicleRepository.class
 model/Staff.class
 repository/PaymentRepository.class
 model/DeliveryVehicle.class
+service/CarService.class
 repository/DeliveryMissionRepository.class
 repository/CarRepository.class
 web/ReportServlet.class
@@ -9,7 +11,9 @@ model/Warehouse.class
 db/DBUtil.class
 web/ClientServlet.class
 model/Factory.class
+service/DeliveryService.class
 repository/InvoiceRepository.class
+web/AuthServlet.class
 model/Client.class
 model/DeliveryMan.class
 model/Payment.class
@@ -19,12 +23,17 @@ repository/OrderBasketRepository.class
 model/Invoice.class
 model/Order.class
 repository/PersonRepository.class
+web/OrderServlet$1.class
 web/CarServlet.class
 model/Manager.class
 repository/OrderRepository.class
+service/AuthService$User.class
+service/AuthService.class
 model/Person.class
 model/OrderBasketId.class
+service/OrderService.class
 repository/ClientRepository.class
 model/DeliveryMission.class
 web/OrderServlet.class
+service/ReportService.class
 web/DeliveryServlet.class

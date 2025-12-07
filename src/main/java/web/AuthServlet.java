@@ -60,32 +60,47 @@ public class AuthServlet extends HttpServlet {
         }
 
         // Check user credentials
-        String sql = "SELECT id, email, name, role, password FROM users WHERE email = ?";
-
+        String userSql = "SELECT id, email, name, role, password FROM users WHERE email = ?";
+        
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement userPs = conn.prepareStatement(userSql)) {
 
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String storedPassword = rs.getString("password");
+            userPs.setString(1, email);
+            try (ResultSet userRs = userPs.executeQuery()) {
+                if (userRs.next()) {
+                    String storedPassword = userRs.getString("password");
 
-                    // FIXED: Check for null and compare passwords
+                    // Check password (plain text for demo)
                     if (storedPassword != null && storedPassword.equals(password)) {
+                        
+                        // Now get the client_id from person table if user is CLIENT
+                        Integer clientId = null;
+                        if ("CLIENT".equals(userRs.getString("role"))) {
+                            clientId = getClientIdByEmail(email, conn);
+                        }
+                        
                         Map<String, Object> response = new HashMap<>();
                         response.put("success", true);
-                        response.put("id", rs.getInt("id"));
-                        response.put("email", rs.getString("email"));
-                        response.put("name", rs.getString("name"));
-                        response.put("role", rs.getString("role"));
+                        response.put("id", userRs.getInt("id"));
+                        response.put("email", userRs.getString("email"));
+                        response.put("name", userRs.getString("name"));
+                        response.put("role", userRs.getString("role"));
+                        
+                        // Add client_id if user is a client
+                        if (clientId != null) {
+                            response.put("clientId", clientId);
+                        }
 
                         // Create session
                         HttpSession session = req.getSession(true);
                         Map<String, Object> sessionUser = new HashMap<>();
-                        sessionUser.put("id", rs.getInt("id"));
-                        sessionUser.put("email", rs.getString("email"));
-                        sessionUser.put("name", rs.getString("name"));
-                        sessionUser.put("role", rs.getString("role"));
+                        sessionUser.put("id", userRs.getInt("id"));
+                        sessionUser.put("email", userRs.getString("email"));
+                        sessionUser.put("name", userRs.getString("name"));
+                        sessionUser.put("role", userRs.getString("role"));
+                        if (clientId != null) {
+                            sessionUser.put("clientId", clientId);
+                        }
                         session.setAttribute("user", sessionUser);
                         session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
@@ -103,6 +118,23 @@ public class AuthServlet extends HttpServlet {
         resp.getWriter().write("{\"error\":\"Invalid credentials\"}");
     }
 
+    // Helper method to get client_id from person email
+    private Integer getClientIdByEmail(String email, Connection conn) throws SQLException {
+        String sql = "SELECT c.client_id FROM client c " +
+                     "JOIN person p ON c.client_id = p.person_id " +
+                     "WHERE p.email = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("client_id");
+                }
+            }
+        }
+        return null;
+    }
+
     // -------------------- REGISTER --------------------
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Map<String, String> body = gson.fromJson(req.getReader(), Map.class);
@@ -117,62 +149,108 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
-        // Check if email already exists
-        String checkSql = "SELECT id FROM users WHERE email = ?";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(checkSql)) {
-
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("{\"error\":\"Email already registered\"}");
-                    return;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{\"error\":\"Registration failed\"}");
-            return;
-        }
-
-        // Insert new user
-        String insertSql = "INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setString(1, email);
-            ps.setString(2, password); // In production, hash this!
-            ps.setString(3, name);
-            ps.setString(4, role != null ? role : "CLIENT");
-
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                // After successful registration, also return full user info
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        int userId = keys.getInt(1);
-
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("success", true);
-                        response.put("message", "Registration successful");
-                        response.put("id", userId);
-                        response.put("email", email);
-                        response.put("name", name);
-                        response.put("role", role != null ? role : "CLIENT");
-
-                        resp.getWriter().write(gson.toJson(response));
+        Connection conn = null;
+        try {
+            conn = DBUtil.getConnection();
+            conn.setAutoCommit(false); // Start transaction
+            
+            // Check if email already exists
+            String checkSql = "SELECT id FROM users WHERE email = ?";
+            try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+                checkPs.setString(1, email);
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        resp.getWriter().write("{\"error\":\"Email already registered\"}");
+                        return;
                     }
                 }
-            } else {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("{\"error\":\"Registration failed\"}");
             }
+
+            // Insert new user
+            String insertSql = "INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)";
+            Integer userId = null;
+            
+            try (PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, email);
+                ps.setString(2, password); // Plain text for demo
+                ps.setString(3, name);
+                ps.setString(4, role != null ? role : "CLIENT");
+
+                int affectedRows = ps.executeUpdate();
+                if (affectedRows == 0) {
+                    throw new SQLException("Creating user failed, no rows affected.");
+                }
+
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        userId = generatedKeys.getInt(1);
+                    } else {
+                        throw new SQLException("Creating user failed, no ID obtained.");
+                    }
+                }
+            }
+
+            // If registering as CLIENT, also create person and client records
+            if ("CLIENT".equals(role)) {
+                // First create person
+                String personSql = "INSERT INTO person (name, email) VALUES (?, ?)";
+                Integer personId = null;
+                
+                try (PreparedStatement personPs = conn.prepareStatement(personSql, Statement.RETURN_GENERATED_KEYS)) {
+                    personPs.setString(1, name);
+                    personPs.setString(2, email);
+                    personPs.executeUpdate();
+                    
+                    try (ResultSet generatedKeys = personPs.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            personId = generatedKeys.getInt(1);
+                        }
+                    }
+                }
+                
+                // Then create client
+                if (personId != null) {
+                    String clientSql = "INSERT INTO client (client_id, shipping_address, billing_address) " +
+                                      "VALUES (?, 'Default Shipping', 'Default Billing')";
+                    try (PreparedStatement clientPs = conn.prepareStatement(clientSql)) {
+                        clientPs.setInt(1, personId);
+                        clientPs.executeUpdate();
+                    }
+                }
+            }
+
+            conn.commit(); // Commit transaction
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("id", userId);
+            response.put("email", email);
+            response.put("name", name);
+            response.put("role", role != null ? role : "CLIENT");
+            
+            resp.getWriter().write(gson.toJson(response));
+            
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\":\"Registration failed: " + e.getMessage() + "\"}");
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

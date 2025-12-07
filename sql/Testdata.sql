@@ -135,3 +135,16 @@ INSERT INTO payment (payment_date, amount, invoice_id) VALUES
                                                            ('2025-01-08', 450000.00, 1),   -- Full payment for invoice 1
                                                            ('2025-01-09', 290000.00, 2),   -- Full payment for invoice 2
                                                            ('2025-01-10', 400000.00, 3);   -- Partial payment for invoice 3
+
+
+
+
+INSERT INTO users (email, password, name, role) VALUES 
+    ('john.doe@example.com', 'password123', 'John Doe', 'CLIENT'),
+    ('jane.smith@example.com', 'password123', 'Jane Smith', 'CLIENT'),
+    ('michael.chen@example.com', 'password123', 'Michael Chen', 'CLIENT'),
+    ('sarah.wong@example.com', 'password123', 'Sarah Wong', 'CLIENT'),
+    ('alex.m@company.com', 'password123', 'Alex Manager', 'MANAGER'),
+    ('rachel.g@company.com', 'password123', 'Rachel Green', 'MANAGER'),
+    ('olivia.d@company.com', 'password123', 'Olivia Driver', 'DELIVERY_MAN'),
+    ('jason.l@company.com', 'password123', 'Jason Lee', 'DELIVERY_MAN');

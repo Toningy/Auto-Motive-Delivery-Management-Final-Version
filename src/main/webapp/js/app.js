@@ -133,7 +133,6 @@ async function login() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Updated: Get data directly from response, not from data.user
             currentUser = {
                 id: data.id,
                 email: data.email,
@@ -141,6 +140,12 @@ async function login() {
                 role: data.role,
                 avatar: data.name?.charAt(0)?.toUpperCase() || 'U'
             };
+            
+            // IMPORTANT: Store clientId if available
+            if (data.clientId) {
+                currentUser.clientId = data.clientId;
+            }
+            
             userRole = data.role;
 
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -386,33 +391,60 @@ async function checkout() {
     }
 
     try {
+        console.log("Attempting checkout...");
+        
+        // Get clientId - either from currentUser or use user id as fallback
+        const clientId = currentUser.clientId || currentUser.id;
+        
+        const carIds = cart.map(item => parseInt(item.carId));
+        
         const orderData = {
-            clientId: currentUser.id,
-            carIds: cart.map(item => item.carId),
-            deliveryAddress,
+            clientId: parseInt(clientId),  // Use the real clientId
+            carIds: carIds,
+            deliveryAddress: deliveryAddress,
             customerName: currentUser.name,
-            customerPhone
+            customerPhone: customerPhone
         };
 
-        const response = await fetch(`${API_URL}/orders/create`, {
+        console.log("Order data:", orderData);
+        
+        const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify(orderData)
         });
 
+        const responseText = await response.text();
+        console.log("Response:", responseText);
+
         if (response.ok) {
-            await response.json();
-            showNotification('Order placed successfully! Delivery mission created.');
-            cart = [];
-            updateCartUI();
-            closeCart();
-            loadClientOrders();
+            try {
+                const result = JSON.parse(responseText);
+                if (result.success) {
+                    showNotification('✅ Order placed successfully! Order #' + result.order.orderId);
+                    cart = [];
+                    updateCartUI();
+                    closeCart();
+                    loadClientOrders();
+                } else {
+                    showNotification('Order failed: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (e) {
+                showNotification('✅ Order placed successfully!');
+                cart = [];
+                updateCartUI();
+                closeCart();
+                loadClientOrders();
+            }
         } else {
-            const error = await response.text();
-            showNotification('Order failed: ' + error, 'error');
+            showNotification('Order failed: ' + responseText, 'error');
         }
     } catch (error) {
-        showNotification('Order failed. Please try again.', 'error');
+        console.error('Checkout error:', error);
+        showNotification('Order failed: ' + error.message, 'error');
     }
 }
 
