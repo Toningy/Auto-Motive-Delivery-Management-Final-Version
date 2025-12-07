@@ -831,9 +831,16 @@ function renderCart() {
     itemCount.textContent = totalItems;
     cartTotal.textContent = `HKD ${formatPrice(totalPrice)}`;
 
-    cartItems.innerHTML = cart.map(item => `
+    cartItems.innerHTML = cart.map(item => {
+        const carImage = getVehicleImage(item);
+        
+        return `
         <div class="cart-item">
-            <div class="cart-item-image">🚗</div>
+            <div class="cart-item-image">
+                <img src="${carImage}" 
+                     alt="${item.modelName}" 
+                     style="width:100%;height:100%;object-fit:cover;">
+            </div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.modelName}</div>
                 <div class="cart-item-details">
@@ -848,7 +855,8 @@ function renderCart() {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function updateQuantity(carId, change) {
