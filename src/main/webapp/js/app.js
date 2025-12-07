@@ -213,10 +213,20 @@ function updateUIForUserRole() {
         currentUser.name?.charAt(0)?.toUpperCase() || 'U';
 
     // Menüpunkt-Visibility je nach Rolle (nur CLIENT & MANAGER)
-    document.getElementById('clientLink').style.display =
-        currentUser.role === 'CLIENT' ? 'block' : 'none';
-    document.getElementById('managerLink').style.display =
-        currentUser.role === 'MANAGER' ? 'block' : 'none';
+    const clientLink = document.getElementById('clientLink');
+    const managerLink = document.getElementById('managerLink');
+    const deliveryLink = document.getElementById('deliveryLink'); // falls noch im HTML
+
+    if (clientLink) {
+        clientLink.style.display = currentUser.role === 'CLIENT' ? 'block' : 'none';
+    }
+    if (managerLink) {
+        managerLink.style.display = currentUser.role === 'MANAGER' ? 'block' : 'none';
+    }
+    if (deliveryLink) {
+        // Delivery-Man-View nicht mehr nutzbar
+        deliveryLink.style.display = 'none';
+    }
 
     if (document.getElementById('userMenu')) {
         document.getElementById('userMenu').style.display = 'flex';
@@ -226,11 +236,11 @@ function updateUIForUserRole() {
     }
 }
 
+// nur noch Demo-Logins für CLIENT & MANAGER
 function quickLogin(role) {
     const demoAccounts = {
         'CLIENT': { email: 'client@example.com', password: 'password123' },
         'MANAGER': { email: 'manager@example.com', password: 'password123' }
-        // DELIVERY_MAN komplett entfernt
     };
 
     const account = demoAccounts[role];
@@ -403,6 +413,7 @@ async function checkout() {
 
         console.log('Order data:', orderData);
 
+        // WICHTIG: wieder /orders benutzen, damit DB wie früher geupdatet wird
         const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
             headers: {
@@ -516,8 +527,8 @@ async function loadPendingMissions() {
     }
 }
 
+// Hardcodierte Delivery-Men-Daten (später evtl. echter Endpoint)
 async function loadDeliveryMen() {
-    // Demo-Daten – später könnt ihr das durch einen echten Endpoint ersetzen
     allDeliveryMen = [
         { staffId: 7, staff: { person: { name: 'Olivia Driver' } } },
         { staffId: 8, staff: { person: { name: 'Jason Lee' } } }
@@ -597,6 +608,9 @@ function displayPendingMissions(missions) {
     const container = document.getElementById('deliveryMissionsList');
     if (!missions || missions.length === 0) {
         container.innerHTML = '<div class="no-results">No pending delivery missions</div>';
+        document.getElementById('pendingMissions').textContent = '0';
+        document.getElementById('inProgressMissions').textContent = '0';
+        document.getElementById('completedMissions').textContent = '0';
         return;
     }
 
@@ -711,7 +725,7 @@ function hideAllDashboards() {
     document.getElementById('mainView').style.display = 'none';
     document.getElementById('clientDashboard').style.display = 'none';
     document.getElementById('managerDashboard').style.display = 'none';
-    // Delivery-Man-Dashboard komplett entfernt
+    // kein Delivery-Personal-Dashboard mehr
 }
 
 function updateNavActiveState(text) {
