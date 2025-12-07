@@ -12,12 +12,12 @@
     --color-bg: #000000;
     --color-surface: #0a0a0a;
     --color-surface-elevated: #141414;
-    --color-border: #752525;
+    --color-border: #323232;
     --color-text-primary: #ffffff;
     --color-text-secondary: #a0a0a0;
     --color-text-muted: #6b6b6b;
-    --color-accent: #d71921;
-    --color-accent-hover: #b01419;
+    --color-accent: #323232;
+    --color-accent-hover: #323232;
     --font-primary: 'Montserrat', sans-serif;
     --font-secondary: 'Inter', sans-serif;
 }
