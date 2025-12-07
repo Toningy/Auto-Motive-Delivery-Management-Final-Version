@@ -1,9 +1,9 @@
 // ==================== BASE API CONFIG ====================
 
-// Context-Path automatisch bestimmen (z.B. "/automotive_delivery_war_exploded")
+// Automatically detect context path (e.g. "/automotive_delivery_war_exploded")
 const pathParts = window.location.pathname.split('/').filter(Boolean);
 const CONTEXT_PATH = pathParts.length > 0 ? '/' + pathParts[0] : '';
-// Basis für alle API-Calls
+// Base URL for all API calls
 const API_URL = CONTEXT_PATH + '/api';
 
 let allVehicles = [];
@@ -14,12 +14,12 @@ let userRole = null;
 let allDeliveryMen = [];
 let allManagers = [];
 
-// Helper für Modelljahr (da in DB evtl. mal null)
+// Helper to get model year (DB might have null in different fields)
 function getModelYear(vehicle) {
     return vehicle.modelYear ?? vehicle.year ?? null;
 }
 
-// Bild-Zuordnung pro Auto-ID
+// Car image mapping by carId
 const CAR_IMAGE_MAP = {
     1: 'https://www.auto-nix.de/fileadmin/user_upload/bilder/serien/toyota/corolla/tabs/corolla-exterieur.jpg',
     2: 'https://cdn.autohaus.de/thumb_1200x675/media/5172/toyota-yaris-cross-hybrid-130-gr.jpg',
@@ -43,7 +43,7 @@ function getVehicleImage(vehicle) {
 window.addEventListener('DOMContentLoaded', () => {
     checkExistingSession();
     loadVehicles();
-    loadDeliveryMen();   // für Manager-Zuordnung
+    loadDeliveryMen();   // For manager assignment dropdown
     loadManagers();
     initScrollEffects();
     updateCartUI();
@@ -81,7 +81,7 @@ async function register() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Auto-login nach erfolgreicher Registrierung
+            // Auto-login after successful registration
             currentUser = {
                 id: data.id,
                 email: data.email,
@@ -96,12 +96,12 @@ async function register() {
             closeAuthModal();
             showNotification(`Welcome, ${currentUser.name}! Registration successful.`);
 
-            // Dashboard laden
+            // Load appropriate dashboard
             if (currentUser.role === 'CLIENT') {
                 loadClientOrders();
             } else if (currentUser.role === 'MANAGER') {
                 loadAllOrders();
-                loadPendingMissions();
+                loadDeliveries();
             }
         } else {
             showNotification(data.error || 'Registration failed', 'error');
@@ -139,7 +139,7 @@ async function login() {
                 avatar: data.name?.charAt(0)?.toUpperCase() || 'U'
             };
 
-            // optional: clientId aus Backend übernehmen
+            // Optional: clientId from backend
             if (data.clientId) {
                 currentUser.clientId = data.clientId;
             }
@@ -155,7 +155,7 @@ async function login() {
                 loadClientOrders();
             } else if (currentUser.role === 'MANAGER') {
                 loadAllOrders();
-                loadPendingMissions();
+                loadDeliveries();
             }
         } else {
             showNotification(data.error || 'Login failed', 'error');
@@ -212,10 +212,10 @@ function updateUIForUserRole() {
     document.getElementById('userAvatar').textContent =
         currentUser.name?.charAt(0)?.toUpperCase() || 'U';
 
-    // Menüpunkt-Visibility je nach Rolle (nur CLIENT & MANAGER)
+    // Role-specific menu visibility (CLIENT & MANAGER only)
     const clientLink = document.getElementById('clientLink');
     const managerLink = document.getElementById('managerLink');
-    const deliveryLink = document.getElementById('deliveryLink'); // falls noch im HTML
+    const deliveryLink = document.getElementById('deliveryLink'); // if still in HTML
 
     if (clientLink) {
         clientLink.style.display = currentUser.role === 'CLIENT' ? 'block' : 'none';
@@ -224,7 +224,7 @@ function updateUIForUserRole() {
         managerLink.style.display = currentUser.role === 'MANAGER' ? 'block' : 'none';
     }
     if (deliveryLink) {
-        // Delivery-Man-View nicht mehr nutzbar
+        // Delivery personnel view not used anymore
         deliveryLink.style.display = 'none';
     }
 
@@ -236,7 +236,7 @@ function updateUIForUserRole() {
     }
 }
 
-// nur noch Demo-Logins für CLIENT & MANAGER
+// Demo logins for CLIENT & MANAGER
 function quickLogin(role) {
     const demoAccounts = {
         'CLIENT': { email: 'client@example.com', password: 'password123' },
@@ -413,7 +413,6 @@ async function checkout() {
 
         console.log('Order data:', orderData);
 
-        // WICHTIG: wieder /orders benutzen, damit DB wie früher geupdatet wird
         const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
             headers: {
@@ -435,7 +434,6 @@ async function checkout() {
                     showNotification('✅ Order placed successfully!');
                 }
             } catch (e) {
-                // Fallback wenn kein JSON
                 showNotification('✅ Order placed successfully!');
             }
 
@@ -505,7 +503,19 @@ async function loadAllOrders() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const orders = await response.json();
-        displayAllOrders(orders);
+
+        // Show orders that still need a driver:
+        // - no delivery mission yet
+        // - or mission exists but no deliveryMan assigned
+        // Additionally ignore initial seed/demo orders (orderId < 6)
+        const actionableOrders = orders.filter(order =>
+                order.orderId >= 6 && (
+                    !order.deliveryMission ||
+                    !order.deliveryMission.deliveryMan
+                )
+        );
+
+        displayAllOrders(actionableOrders);
     } catch (error) {
         console.error('Error loading all orders:', error);
         document.getElementById('inventoryList').innerHTML =
@@ -513,21 +523,48 @@ async function loadAllOrders() {
     }
 }
 
-async function loadPendingMissions() {
+
+// Load all deliveries (missions) and show assigned/in progress/completed
+async function loadDeliveries() {
     try {
-        const response = await fetch(`${API_URL}/delivery/missions/pending`);
+        const response = await fetch(`${API_URL}/delivery`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const missions = await response.json();
-        displayPendingMissions(missions);
+
+        // Counts:
+        // Pending = PENDING + ASSIGNED
+        const pendingCount = missions.filter(m => {
+            const s = normalizeStatus(m.status);
+            return s === 'PENDING' || s === 'ASSIGNED';
+        }).length;
+
+        const inProgressCount = missions.filter(m => normalizeStatus(m.status) === 'IN_PROGRESS').length;
+        const completedCount = missions.filter(m => normalizeStatus(m.status) === 'COMPLETED').length;
+
+        document.getElementById('pendingMissions').textContent = pendingCount;
+        document.getElementById('inProgressMissions').textContent = inProgressCount;
+        document.getElementById('completedMissions').textContent = completedCount;
+
+        // Show deliveries that are assigned / in progress / completed
+        const filtered = missions.filter(m => {
+            const s = normalizeStatus(m.status);
+            return s === 'ASSIGNED' || s === 'IN_PROGRESS' || s === 'COMPLETED';
+        });
+
+        displayDeliveries(filtered);
     } catch (error) {
-        console.error('Error loading pending missions:', error);
+        console.error('Error loading missions:', error);
         document.getElementById('deliveryMissionsList').innerHTML =
             '<div class="no-results">Error loading missions: ' + error.message + '</div>';
+
+        document.getElementById('pendingMissions').textContent = '0';
+        document.getElementById('inProgressMissions').textContent = '0';
+        document.getElementById('completedMissions').textContent = '0';
     }
 }
 
-// Hardcodierte Delivery-Men-Daten (später evtl. echter Endpoint)
+// Hardcoded delivery men (can be replaced with real API later)
 async function loadDeliveryMen() {
     allDeliveryMen = [
         { staffId: 7, staff: { person: { name: 'Olivia Driver' } } },
@@ -547,7 +584,7 @@ function displayAllOrders(orders) {
     container.innerHTML = '';
 
     if (!orders || orders.length === 0) {
-        container.innerHTML = '<div class="no-results">No orders found</div>';
+        container.innerHTML = '<div class="no-results">No unassigned orders</div>';
         return;
     }
 
@@ -556,16 +593,6 @@ function displayAllOrders(orders) {
             order.client && order.client.person && order.client.person.name
                 ? order.client.person.name
                 : `Client #${order.clientId}`;
-
-        const hasDeliveryMission = order.deliveryMission && order.deliveryMission.status;
-        const missionStatus = hasDeliveryMission ? order.deliveryMission.status : 'PENDING';
-        const hasDeliveryMan = hasDeliveryMission && order.deliveryMission.deliveryMan;
-        const deliveryManName =
-            hasDeliveryMan &&
-            order.deliveryMission.deliveryMan.staff &&
-            order.deliveryMission.deliveryMan.staff.person
-                ? order.deliveryMission.deliveryMan.staff.person.name
-                : 'Not assigned';
 
         return `
         <div class="order-item">
@@ -581,51 +608,34 @@ function displayAllOrders(orders) {
             <div style="font-size:14px;">Date: ${new Date(order.orderDate).toLocaleDateString()}</div>
             <div style="font-size:14px;">Total: HKD ${formatPrice(order.totalAmount)}</div>
 
-            ${!order.deliveryMission || order.deliveryMission.status === 'PENDING' ? `
-                <div style="margin-top:10px;">
-                    <select id="deliveryMan-${order.orderId}" class="form-input" style="margin-bottom:5px;">
-                        <option value="">Select Driver</option>
-                        ${allDeliveryMen.map(dm =>
+            <div style="margin-top:10px;">
+                <select id="deliveryMan-${order.orderId}" class="form-input" style="margin-bottom:5px;">
+                    <option value="">Select Driver</option>
+                    ${allDeliveryMen.map(dm =>
             `<option value="${dm.staffId}">${dm.staff.person.name}</option>`
         ).join('')}
-                    </select>
-                    <button class="btn-primary" onclick="assignDelivery(${order.orderId})" style="width:100%;">
-                        Assign Delivery
-                    </button>
-                </div>
-            ` : `
-                <div style="margin-top:8px;">
-                    <strong>Delivery:</strong> ${missionStatus}
-                    ${hasDeliveryMan ? `<br>Driver: ${deliveryManName}` : ''}
-                </div>
-            `}
+                </select>
+                <button class="btn-primary" onclick="assignDelivery(${order.orderId})" style="width:100%;">
+                    Assign Delivery
+                </button>
+            </div>
         </div>
         `;
     }).join('');
 }
 
-function displayPendingMissions(missions) {
+function displayDeliveries(missions) {
     const container = document.getElementById('deliveryMissionsList');
     if (!missions || missions.length === 0) {
-        container.innerHTML = '<div class="no-results">No pending delivery missions</div>';
-        document.getElementById('pendingMissions').textContent = '0';
-        document.getElementById('inProgressMissions').textContent = '0';
-        document.getElementById('completedMissions').textContent = '0';
+        container.innerHTML = '<div class="no-results">No deliveries found</div>';
         return;
     }
-
-    const pendingCount = missions.filter(m => m.status === 'PENDING').length;
-    const inProgressCount = missions.filter(m => m.status === 'IN_PROGRESS').length;
-    const completedCount = missions.filter(m => m.status === 'COMPLETED').length;
-
-    document.getElementById('pendingMissions').textContent = pendingCount;
-    document.getElementById('inProgressMissions').textContent = inProgressCount;
-    document.getElementById('completedMissions').textContent = completedCount;
 
     container.innerHTML = missions.map(mission => {
         const missionId = mission.missionId || 'N/A';
         const status = mission.status || 'UNKNOWN';
-        const orderId = (mission.order && mission.order.orderId) || mission.orderId || 'N/A';
+        const statusClass = normalizeStatus(status).toLowerCase(); // e.g. "assigned", "in_progress", "completed"
+        const orderId = mission.orderId || (mission.order && mission.order.orderId) || 'N/A';
         const customerName = mission.customerName || 'Unknown Customer';
         const deliveryAddress = mission.deliveryAddress || 'No address provided';
         const customerPhone = mission.customerPhone || 'No phone';
@@ -634,7 +644,7 @@ function displayPendingMissions(missions) {
         <div class="mission-item">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <strong>Mission #${missionId}</strong>
-                <span class="status-badge pending">${status}</span>
+                <span class="status-badge ${statusClass}">${status}</span>
             </div>
             <div style="font-size:14px;">Order: #${orderId}</div>
             <div style="font-size:14px;">Customer: ${customerName}</div>
@@ -673,8 +683,9 @@ async function assignDelivery(orderId) {
 
         if (response.ok) {
             showNotification('Delivery assigned successfully!');
+            // Reload unassigned orders and deliveries overview
             loadAllOrders();
-            loadPendingMissions();
+            loadDeliveries();
         } else {
             showNotification('Assignment failed: ' + responseText, 'error');
         }
@@ -718,14 +729,13 @@ function showOrderManagement() {
 function showDeliveryManagement() {
     document.getElementById('orderManagement').style.display = 'none';
     document.getElementById('deliveryManagement').style.display = 'block';
-    loadPendingMissions();
+    loadDeliveries();
 }
 
 function hideAllDashboards() {
     document.getElementById('mainView').style.display = 'none';
     document.getElementById('clientDashboard').style.display = 'none';
     document.getElementById('managerDashboard').style.display = 'none';
-    // kein Delivery-Personal-Dashboard mehr
 }
 
 function updateNavActiveState(text) {
@@ -856,6 +866,11 @@ function showNotification(message, type = 'success') {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// Normalize status string (case-insensitive helper)
+function normalizeStatus(status) {
+    return (status || '').toUpperCase();
 }
 
 // ==================== AUTH MODAL HELPERS ====================
