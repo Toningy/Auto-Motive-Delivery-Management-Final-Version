@@ -25,7 +25,6 @@
             <!-- Role-specific links -->
             <a href="#" id="clientLink" style="display: none;" onclick="showClientDashboard()">My Orders</a>
             <a href="#" id="managerLink" style="display: none;" onclick="showManagerDashboard()">Management</a>
-            <a href="#" id="deliveryLink" style="display: none;" onclick="showDeliveryDashboard()">Missions</a>
         </div>
 
         <div class="nav-actions">
@@ -243,41 +242,6 @@
     </div>
 </div>
 
-<!-- Delivery Personnel Dashboard -->
-<div id="deliveryPersonnelDashboard" style="display: none;">
-    <div class="container">
-        <div class="dashboard-header">
-            <h1>Delivery Missions</h1>
-            <div class="delivery-man-info">
-                <span id="deliveryManName">Delivery Personnel</span>
-            </div>
-        </div>
-
-        <div class="missions-container">
-            <div class="mission-card pending">
-                <h3><i class="fas fa-clock"></i> Pending Missions</h3>
-                <div id="pendingMissionsList" class="missions-list">
-                    <div class="loading">Loading pending missions...</div>
-                </div>
-            </div>
-
-            <div class="mission-card active">
-                <h3><i class="fas fa-play-circle"></i> Active Mission</h3>
-                <div id="activeMission" class="mission-details">
-                    <div class="loading">Loading active mission...</div>
-                </div>
-            </div>
-
-            <div class="mission-card completed">
-                <h3><i class="fas fa-check-circle"></i> Mission History</h3>
-                <div id="completedMissionsList" class="missions-list">
-                    <div class="loading">Loading mission history...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Authentication Modal -->
 <div id="authModal" class="modal">
     <div class="modal-content" style="max-width: 400px;">
@@ -307,7 +271,6 @@
                     <div style="display: flex; gap: 10px; flex-direction: column;">
                         <button class="btn btn-outline" onclick="quickLogin('CLIENT')">Login as Client</button>
                         <button class="btn btn-outline" onclick="quickLogin('MANAGER')">Login as Manager</button>
-                        <button class="btn btn-outline" onclick="quickLogin('DELIVERY_MAN')">Login as Delivery</button>
                     </div>
                 </div>
             </div>
@@ -330,7 +293,6 @@
                     <select id="registerRole" class="form-input">
                         <option value="CLIENT">Client</option>
                         <option value="MANAGER">Manager</option>
-                        <option value="DELIVERY_MAN">Delivery Personnel</option>
                     </select>
                 </div>
                 <button class="btn btn-primary" style="width: 100%;" onclick="register()">Create Account</button>
@@ -362,7 +324,7 @@
             </div>
             <button class="checkout-btn" onclick="checkout()" id="checkoutBtn">Proceed to Checkout</button>
         </div>
-    </div>å
+    </div>
 </div>
 
 <script src="js/app.js"></script>

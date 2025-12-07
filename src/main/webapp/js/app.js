@@ -1,5 +1,5 @@
 // ==================== BASE API CONFIG ====================
-alert("app.js loaded");
+
 // Context-Path automatisch bestimmen (z.B. "/automotive_delivery_war_exploded")
 const pathParts = window.location.pathname.split('/').filter(Boolean);
 const CONTEXT_PATH = pathParts.length > 0 ? '/' + pathParts[0] : '';
@@ -43,7 +43,7 @@ function getVehicleImage(vehicle) {
 window.addEventListener('DOMContentLoaded', () => {
     checkExistingSession();
     loadVehicles();
-    loadDeliveryMen();
+    loadDeliveryMen();   // für Manager-Zuordnung
     loadManagers();
     initScrollEffects();
     updateCartUI();
@@ -81,7 +81,7 @@ async function register() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Auto-login after successful registration
+            // Auto-login nach erfolgreicher Registrierung
             currentUser = {
                 id: data.id,
                 email: data.email,
@@ -96,14 +96,12 @@ async function register() {
             closeAuthModal();
             showNotification(`Welcome, ${currentUser.name}! Registration successful.`);
 
-            // Load appropriate dashboard
+            // Dashboard laden
             if (currentUser.role === 'CLIENT') {
                 loadClientOrders();
             } else if (currentUser.role === 'MANAGER') {
                 loadAllOrders();
                 loadPendingMissions();
-            } else if (currentUser.role === 'DELIVERY_MAN') {
-                loadDeliveryMissions();
             }
         } else {
             showNotification(data.error || 'Registration failed', 'error');
@@ -140,12 +138,12 @@ async function login() {
                 role: data.role,
                 avatar: data.name?.charAt(0)?.toUpperCase() || 'U'
             };
-            
-            // IMPORTANT: Store clientId if available
+
+            // optional: clientId aus Backend übernehmen
             if (data.clientId) {
                 currentUser.clientId = data.clientId;
             }
-            
+
             userRole = data.role;
 
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -158,8 +156,6 @@ async function login() {
             } else if (currentUser.role === 'MANAGER') {
                 loadAllOrders();
                 loadPendingMissions();
-            } else if (currentUser.role === 'DELIVERY_MAN') {
-                loadDeliveryMissions();
             }
         } else {
             showNotification(data.error || 'Login failed', 'error');
@@ -184,8 +180,11 @@ function logout() {
     userRole = null;
     localStorage.removeItem('currentUser');
 
-    document.getElementById('userMenu').style.display = 'none';
-    document.getElementById('loginButton').style.display = 'block';
+    const userMenu = document.getElementById('userMenu');
+    const loginButton = document.getElementById('loginButton');
+
+    if (userMenu) userMenu.style.display = 'none';
+    if (loginButton) loginButton.style.display = 'block';
 
     hideAllDashboards();
     showMainView();
@@ -197,9 +196,7 @@ function logout() {
 }
 
 function updateUIForUserRole() {
-    // Falls kein User oder die Rolle fehlt → UI nicht aktualisieren
     if (!currentUser || !currentUser.role) {
-        // Falls kein Nutzer eingeloggt, Login-Button zeigen
         const loginBtn = document.getElementById('loginButton');
         const userMenu = document.getElementById('userMenu');
 
@@ -208,7 +205,6 @@ function updateUIForUserRole() {
         return;
     }
 
-    // Role kann jetzt sicher gelesen werden
     const roleLower = currentUser.role.toLowerCase();
 
     document.getElementById('userName').textContent = currentUser.name || 'User';
@@ -216,24 +212,25 @@ function updateUIForUserRole() {
     document.getElementById('userAvatar').textContent =
         currentUser.name?.charAt(0)?.toUpperCase() || 'U';
 
-    // Menüpunkt-Visibility je nach Rolle
+    // Menüpunkt-Visibility je nach Rolle (nur CLIENT & MANAGER)
     document.getElementById('clientLink').style.display =
         currentUser.role === 'CLIENT' ? 'block' : 'none';
     document.getElementById('managerLink').style.display =
         currentUser.role === 'MANAGER' ? 'block' : 'none';
-    document.getElementById('deliveryLink').style.display =
-        currentUser.role === 'DELIVERY_MAN' ? 'block' : 'none';
 
-    // User menu anzeigen, Login verstecken
-    document.getElementById('userMenu').style.display = 'flex';
-    document.getElementById('loginButton').style.display = 'none';
+    if (document.getElementById('userMenu')) {
+        document.getElementById('userMenu').style.display = 'flex';
+    }
+    if (document.getElementById('loginButton')) {
+        document.getElementById('loginButton').style.display = 'none';
+    }
 }
 
 function quickLogin(role) {
     const demoAccounts = {
         'CLIENT': { email: 'client@example.com', password: 'password123' },
-        'MANAGER': { email: 'manager@example.com', password: 'password123' },
-        'DELIVERY_MAN': { email: 'delivery@example.com', password: 'password123' }
+        'MANAGER': { email: 'manager@example.com', password: 'password123' }
+        // DELIVERY_MAN komplett entfernt
     };
 
     const account = demoAccounts[role];
@@ -391,26 +388,24 @@ async function checkout() {
     }
 
     try {
-        console.log("Attempting checkout...");
-        
-        // Get clientId - either from currentUser or use user id as fallback
+        console.log('Attempting checkout...');
+
         const clientId = currentUser.clientId || currentUser.id;
-        
-        const carIds = cart.map(item => parseInt(item.carId));
-        
+        const carIds = cart.map(item => parseInt(item.carId, 10));
+
         const orderData = {
-            clientId: parseInt(clientId),  // Use the real clientId
+            clientId: parseInt(clientId, 10),
             carIds: carIds,
-            deliveryAddress: deliveryAddress,
+            deliveryAddress,
             customerName: currentUser.name,
-            customerPhone: customerPhone
+            customerPhone
         };
 
-        console.log("Order data:", orderData);
-        
+        console.log('Order data:', orderData);
+
         const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -418,27 +413,25 @@ async function checkout() {
         });
 
         const responseText = await response.text();
-        console.log("Response:", responseText);
+        console.log('Response:', responseText);
 
         if (response.ok) {
             try {
                 const result = JSON.parse(responseText);
-                if (result.success) {
+                if (result.success && result.order) {
                     showNotification('✅ Order placed successfully! Order #' + result.order.orderId);
-                    cart = [];
-                    updateCartUI();
-                    closeCart();
-                    loadClientOrders();
                 } else {
-                    showNotification('Order failed: ' + (result.error || 'Unknown error'), 'error');
+                    showNotification('✅ Order placed successfully!');
                 }
             } catch (e) {
+                // Fallback wenn kein JSON
                 showNotification('✅ Order placed successfully!');
-                cart = [];
-                updateCartUI();
-                closeCart();
-                loadClientOrders();
             }
+
+            cart = [];
+            updateCartUI();
+            closeCart();
+            loadClientOrders();
         } else {
             showNotification('Order failed: ' + responseText, 'error');
         }
@@ -513,7 +506,7 @@ async function loadPendingMissions() {
     try {
         const response = await fetch(`${API_URL}/delivery/missions/pending`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const missions = await response.json();
         displayPendingMissions(missions);
     } catch (error) {
@@ -523,49 +516,8 @@ async function loadPendingMissions() {
     }
 }
 
-function displayPendingMissions(missions) {
-    const container = document.getElementById('deliveryMissionsList');
-    if (!missions || missions.length === 0) {
-        container.innerHTML = '<div class="no-results">No pending delivery missions</div>';
-        return;
-    }
-
-    // Update counters safely
-    const pendingCount = missions.filter(m => m.status === 'PENDING').length;
-    const inProgressCount = missions.filter(m => m.status === 'IN_PROGRESS').length;
-    const completedCount = missions.filter(m => m.status === 'COMPLETED').length;
-    
-    document.getElementById('pendingMissions').textContent = pendingCount;
-    document.getElementById('inProgressMissions').textContent = inProgressCount;
-    document.getElementById('completedMissions').textContent = completedCount;
-
-    // Display missions with safe data handling
-    container.innerHTML = missions.map(mission => {
-        // Safely extract data with fallbacks
-        const missionId = mission.missionId || 'N/A';
-        const status = mission.status || 'UNKNOWN';
-        const orderId = (mission.order && mission.order.orderId) || mission.orderId || 'N/A';
-        const customerName = mission.customerName || 'Unknown Customer';
-        const deliveryAddress = mission.deliveryAddress || 'No address provided';
-        const customerPhone = mission.customerPhone || 'No phone';
-
-        return `
-        <div class="mission-item">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <strong>Mission #${missionId}</strong>
-                <span class="status-badge pending">${status}</span>
-            </div>
-            <div style="font-size:14px;">Order: #${orderId}</div>
-            <div style="font-size:14px;">Customer: ${customerName}</div>
-            <div style="font-size:14px;">Address: ${deliveryAddress}</div>
-            <div style="font-size:14px;">Phone: ${customerPhone}</div>
-        </div>
-        `;
-    }).join('');
-}
-
 async function loadDeliveryMen() {
-    // Demo-Daten – falls ihr später echtes Endpoint habt, hier ersetzen
+    // Demo-Daten – später könnt ihr das durch einen echten Endpoint ersetzen
     allDeliveryMen = [
         { staffId: 7, staff: { person: { name: 'Olivia Driver' } } },
         { staffId: 8, staff: { person: { name: 'Jason Lee' } } }
@@ -581,29 +533,29 @@ async function loadManagers() {
 
 function displayAllOrders(orders) {
     const container = document.getElementById('inventoryList');
-    
-    // Clear loading message
     container.innerHTML = '';
-    
+
     if (!orders || orders.length === 0) {
         container.innerHTML = '<div class="no-results">No orders found</div>';
         return;
     }
 
     container.innerHTML = orders.map(order => {
-        // Safely get client name with fallback
-        const clientName = order.client && order.client.person && order.client.person.name 
-            ? order.client.person.name 
-            : `Client #${order.clientId}`;
-        
-        // Safely get delivery mission status
+        const clientName =
+            order.client && order.client.person && order.client.person.name
+                ? order.client.person.name
+                : `Client #${order.clientId}`;
+
         const hasDeliveryMission = order.deliveryMission && order.deliveryMission.status;
         const missionStatus = hasDeliveryMission ? order.deliveryMission.status : 'PENDING';
         const hasDeliveryMan = hasDeliveryMission && order.deliveryMission.deliveryMan;
-        const deliveryManName = hasDeliveryMan && order.deliveryMission.deliveryMan.staff && order.deliveryMission.deliveryMan.staff.person
-            ? order.deliveryMission.deliveryMan.staff.person.name
-            : 'Not assigned';
-        
+        const deliveryManName =
+            hasDeliveryMan &&
+            order.deliveryMission.deliveryMan.staff &&
+            order.deliveryMission.deliveryMan.staff.person
+                ? order.deliveryMission.deliveryMan.staff.person.name
+                : 'Not assigned';
+
         return `
         <div class="order-item">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -617,14 +569,14 @@ function displayAllOrders(orders) {
             </div>
             <div style="font-size:14px;">Date: ${new Date(order.orderDate).toLocaleDateString()}</div>
             <div style="font-size:14px;">Total: HKD ${formatPrice(order.totalAmount)}</div>
-            
+
             ${!order.deliveryMission || order.deliveryMission.status === 'PENDING' ? `
                 <div style="margin-top:10px;">
                     <select id="deliveryMan-${order.orderId}" class="form-input" style="margin-bottom:5px;">
                         <option value="">Select Driver</option>
                         ${allDeliveryMen.map(dm =>
-        `<option value="${dm.staffId}">${dm.staff.person.name}</option>`
-    ).join('')}
+            `<option value="${dm.staffId}">${dm.staff.person.name}</option>`
+        ).join('')}
                     </select>
                     <button class="btn-primary" onclick="assignDelivery(${order.orderId})" style="width:100%;">
                         Assign Delivery
@@ -648,25 +600,35 @@ function displayPendingMissions(missions) {
         return;
     }
 
-    document.getElementById('pendingMissions').textContent =
-        missions.filter(m => m.status === 'PENDING').length;
-    document.getElementById('inProgressMissions').textContent =
-        missions.filter(m => m.status === 'IN_PROGRESS').length;
-    document.getElementById('completedMissions').textContent =
-        missions.filter(m => m.status === 'COMPLETED').length;
+    const pendingCount = missions.filter(m => m.status === 'PENDING').length;
+    const inProgressCount = missions.filter(m => m.status === 'IN_PROGRESS').length;
+    const completedCount = missions.filter(m => m.status === 'COMPLETED').length;
 
-    container.innerHTML = missions.map(mission => `
+    document.getElementById('pendingMissions').textContent = pendingCount;
+    document.getElementById('inProgressMissions').textContent = inProgressCount;
+    document.getElementById('completedMissions').textContent = completedCount;
+
+    container.innerHTML = missions.map(mission => {
+        const missionId = mission.missionId || 'N/A';
+        const status = mission.status || 'UNKNOWN';
+        const orderId = (mission.order && mission.order.orderId) || mission.orderId || 'N/A';
+        const customerName = mission.customerName || 'Unknown Customer';
+        const deliveryAddress = mission.deliveryAddress || 'No address provided';
+        const customerPhone = mission.customerPhone || 'No phone';
+
+        return `
         <div class="mission-item">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <strong>Mission #${mission.missionId}</strong>
-                <span class="status-badge pending">${mission.status}</span>
+                <strong>Mission #${missionId}</strong>
+                <span class="status-badge pending">${status}</span>
             </div>
-            <div style="font-size:14px;">Order: #${mission.order.orderId}</div>
-            <div style="font-size:14px;">Customer: ${mission.customerName}</div>
-            <div style="font-size:14px;">Address: ${mission.deliveryAddress}</div>
-            <div style="font-size:14px;">Phone: ${mission.customerPhone}</div>
+            <div style="font-size:14px;">Order: #${orderId}</div>
+            <div style="font-size:14px;">Customer: ${customerName}</div>
+            <div style="font-size:14px;">Address: ${deliveryAddress}</div>
+            <div style="font-size:14px;">Phone: ${customerPhone}</div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 async function assignDelivery(orderId) {
@@ -677,15 +639,14 @@ async function assignDelivery(orderId) {
     }
 
     try {
-        // Get manager ID from current user - IMPORTANT!
-        const managerId = currentUser ? currentUser.id : 5; // fallback to demo manager
-        
+        const managerId = currentUser ? currentUser.id : 5;
+
         const assignmentData = {
             deliveryManId: parseInt(deliveryManId, 10),
-            managerId: parseInt(managerId, 10)  // ADD THIS LINE!
+            managerId: parseInt(managerId, 10)
         };
 
-        console.log("Assignment data:", assignmentData); // Debug log
+        console.log('Assignment data:', assignmentData);
 
         const response = await fetch(`${API_URL}/orders/${orderId}/assign-delivery`, {
             method: 'POST',
@@ -694,106 +655,18 @@ async function assignDelivery(orderId) {
         });
 
         const responseText = await response.text();
-        console.log("Response:", responseText); // Debug log
+        console.log('Response:', responseText);
 
         if (response.ok) {
             showNotification('Delivery assigned successfully!');
-            loadAllOrders(); // Refresh the orders list
+            loadAllOrders();
+            loadPendingMissions();
         } else {
             showNotification('Assignment failed: ' + responseText, 'error');
         }
     } catch (error) {
         console.error('Assignment error:', error);
         showNotification('Assignment failed: ' + error.message, 'error');
-    }
-}
-
-// ==================== DELIVERY PERSONNEL DASHBOARD ====================
-
-async function loadDeliveryMissions() {
-    try {
-        // Demo: fix auf Fahrer-ID 7
-        const response = await fetch(`${API_URL}/delivery/missions/delivery-man/7`);
-        const missions = await response.json();
-        displayDeliveryMissions(missions);
-    } catch (error) {
-        console.error('Error loading delivery missions:', error);
-    }
-}
-
-function displayDeliveryMissions(missions) {
-    const pendingContainer = document.getElementById('pendingMissionsList');
-    const activeContainer = document.getElementById('activeMission');
-    const completedContainer = document.getElementById('completedMissionsList');
-
-    const pendingMissions = missions.filter(m => m.status === 'PENDING' || m.status === 'ASSIGNED');
-    const activeMission = missions.find(m => m.status === 'IN_PROGRESS');
-    const completedMissions = missions.filter(m => m.status === 'COMPLETED');
-
-    if (pendingMissions.length === 0) {
-        pendingContainer.innerHTML = '<div class="no-results">No pending missions</div>';
-    } else {
-        pendingContainer.innerHTML = pendingMissions.map(mission => `
-            <div class="mission-item">
-                <div><strong>Mission #${mission.missionId}</strong></div>
-                <div style="font-size:12px;">Order: #${mission.order.orderId}</div>
-                <div style="font-size:12px;">Customer: ${mission.customerName}</div>
-                <div style="font-size:12px;">Address: ${mission.deliveryAddress}</div>
-                <button class="btn-primary"
-                        onclick="updateMissionStatus(${mission.missionId}, 'IN_PROGRESS')"
-                        style="width:100%;margin-top:8px;padding:8px;">
-                    Start Mission
-                </button>
-            </div>
-        `).join('');
-    }
-
-    if (activeMission) {
-        activeContainer.innerHTML = `
-            <div style="background:var(--color-bg);padding:15px;border-radius:8px;">
-                <div style="font-weight:600;margin-bottom:8px;">Mission #${activeMission.missionId}</div>
-                <div style="font-size:14px;margin-bottom:8px;">Order: #${activeMission.order.orderId}</div>
-                <div style="font-size:14px;margin-bottom:8px;">Customer: ${activeMission.customerName}</div>
-                <div style="font-size:14px;margin-bottom:8px;">Address: ${activeMission.deliveryAddress}</div>
-                <div style="font-size:14px;margin-bottom:15px;">Phone: ${activeMission.customerPhone}</div>
-                <button class="btn-primary" style="width:100%;"
-                        onclick="updateMissionStatus(${activeMission.missionId}, 'COMPLETED')">
-                    Mark Complete
-                </button>
-            </div>
-        `;
-    } else {
-        activeContainer.innerHTML = '<div class="no-results">No active mission</div>';
-    }
-
-    if (completedMissions.length === 0) {
-        completedContainer.innerHTML = '<div class="no-results">No completed missions</div>';
-    } else {
-        completedContainer.innerHTML = completedMissions.map(mission => `
-            <div class="mission-item">
-                <div><strong>Mission #${mission.missionId}</strong></div>
-                <div style="font-size:12px;">Order: #${mission.order.orderId}</div>
-                <div style="font-size:12px;">Customer: ${mission.customerName}</div>
-                <div style="font-size:12px;color:#2ecc71;font-weight:600;">✓ Completed</div>
-            </div>
-        `).join('');
-    }
-}
-
-async function updateMissionStatus(missionId, status) {
-    try {
-        const response = await fetch(`${API_URL}/delivery/missions/${missionId}/status?status=${status}`, {
-            method: 'PUT'
-        });
-
-        if (response.ok) {
-            showNotification(`Mission status updated to ${status}`);
-            loadDeliveryMissions();
-        } else {
-            showNotification('Status update failed', 'error');
-        }
-    } catch (error) {
-        showNotification('Status update failed', 'error');
     }
 }
 
@@ -822,16 +695,6 @@ function showManagerDashboard() {
     showOrderManagement();
 }
 
-function showDeliveryDashboard() {
-    hideAllDashboards();
-    document.getElementById('deliveryPersonnelDashboard').style.display = 'block';
-    updateNavActiveState('Missions');
-    if (currentUser) {
-        document.getElementById('deliveryManName').textContent = currentUser.name;
-    }
-    loadDeliveryMissions();
-}
-
 function showOrderManagement() {
     document.getElementById('orderManagement').style.display = 'block';
     document.getElementById('deliveryManagement').style.display = 'none';
@@ -848,7 +711,7 @@ function hideAllDashboards() {
     document.getElementById('mainView').style.display = 'none';
     document.getElementById('clientDashboard').style.display = 'none';
     document.getElementById('managerDashboard').style.display = 'none';
-    document.getElementById('deliveryPersonnelDashboard').style.display = 'none';
+    // Delivery-Man-Dashboard komplett entfernt
 }
 
 function updateNavActiveState(text) {
@@ -904,12 +767,12 @@ function renderCart() {
 
     cartItems.innerHTML = cart.map(item => {
         const carImage = getVehicleImage(item);
-        
+
         return `
         <div class="cart-item">
             <div class="cart-item-image">
-                <img src="${carImage}" 
-                     alt="${item.modelName}" 
+                <img src="${carImage}"
+                     alt="${item.modelName}"
                      style="width:100%;height:100%;object-fit:cover;">
             </div>
             <div class="cart-item-info">
@@ -955,7 +818,7 @@ function removeFromCart(carId) {
 // ==================== UTILITIES ====================
 
 function getStatusColor(status) {
-    switch(status) {
+    switch (status) {
         case 'PENDING': return '#f39c12';
         case 'CONFIRMED': return '#3498db';
         case 'DELIVERED': return '#2ecc71';
@@ -1042,7 +905,7 @@ function resetFilters() {
 function sortVehicles() {
     const sortBy = document.getElementById('sortSelect').value;
 
-    switch(sortBy) {
+    switch (sortBy) {
         case 'price-asc':
             filteredVehicles.sort((a, b) => a.price - b.price);
             break;
